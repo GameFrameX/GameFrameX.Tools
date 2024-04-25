@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "ProtoServerToolsApp": {
+      "commandName": "Project",
+      "commandLineArgs": "-m server --i ./../../../../../Protobuf -o ./../../../../../Server/GameFrameX.Proto/Proto -n GameFrameX.Proto.Proto"
+    },
+    "ProtoUnityToolsApp": {
+      "commandName": "Project",
+      "commandLineArgs": "-m unity --i ./../../../../../Protobuf -o ./../../../../../Unity/Assets/Hotfix/Proto -n Hotfix.Proto"
+    },
+    "ProtoTypeScriptToolsApp": {
+       "commandName": "Project",
+       "commandLineArgs":"-m typescript --i ./../../../../../Protobuf -o ./../../../../../Laya/src/gameframex/protobuf -n ''"
+     }
+  }
+}
