@@ -1,0 +1,3 @@
+*.icns !text !filter !merge !diff
+*.ico !text !filter !merge !diff
+*.png !text !filter !merge !diff
