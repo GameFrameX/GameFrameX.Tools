@@ -167,9 +167,14 @@ public static class MessageHelper
                             if (key.Trim().StartsWith("repeated"))
                             {
                                 field.IsRepeated = true;
+                                field.Type = Utility.ConvertType(fieldSplitStrings[1].Trim());
+                            }
+                            else
+                            {
+                                field.Type = Utility.ConvertType(key + fieldSplitStrings[1].Trim());
                             }
 
-                            field.Type = Utility.ConvertType(fieldSplitStrings[1].Trim());
+
                             field.Name = fieldSplitStrings[2].Trim();
                         }
                         else if (fieldSplitStrings.Length > 1)
