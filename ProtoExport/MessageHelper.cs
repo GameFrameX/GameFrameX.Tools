@@ -5,11 +5,11 @@ namespace GameFrameX.ProtoExport;
 public static class MessageHelper
 {
     // 正则表达式匹配enums
-    private const string EnumPattern = @"enum\s+(\w+)\s+{([^}]+)}";
+    private const string EnumPattern = @"enum\s+(\w+)\s+\{([^}]*)\}";
 
     // 正则表达式匹配messages
-    private const string MessagePattern = @"message\s+(\w+)\s+{([^}]+)}";
-    private const string CommentPattern = @"//([^\r\n]*)\r?\n\s*(enum|message)\s+(\w+)\s*\{";
+    private const string MessagePattern = @"message\s+(\w+)\s*\{\s*([^}]+)\s*\}";
+    private const string CommentPattern = @"//([^\n]*)\n\s*(enum|message)\s+(\w+)\s*{";
     private const string StartPattern = @"option start = (\d+);";
     private const string PackagePattern = @"package (\w+);";
 
@@ -34,9 +34,11 @@ public static class MessageHelper
             throw new Exception("Package not found==>example: package {" + fileName + "};");
         }
 
-        OperationCodeInfoList operationCodeInfo = new OperationCodeInfoList();
+        OperationCodeInfoList operationCodeInfo = new OperationCodeInfoList
+        {
+            OutputPath = Path.Combine(filePath, fileName)
+        };
 
-        operationCodeInfo.OutputPath = Path.Combine(filePath, fileName);
         // 使用正则表达式提取start
         Match startMatch = Regex.Match(proto, StartPattern, RegexOptions.Singleline);
         if (startMatch.Success)
@@ -94,7 +96,7 @@ public static class MessageHelper
     {
         foreach (var operationCodeInfo in operationCodeInfos)
         {
-            if (operationCodeInfo.IsMessage && operationCodeInfo.IsResponse && operationCodeInfo.MessageName == messageName)
+            if (operationCodeInfo is { IsMessage: true, IsResponse: true } && operationCodeInfo.MessageName == messageName)
             {
                 return operationCodeInfo;
             }
@@ -112,8 +114,6 @@ public static class MessageHelper
             {
                 var comment = match.Groups[1].Value;
                 var type = match.Groups[3].Value;
-                // Console.WriteLine(comment);
-                // Console.WriteLine(type);
                 foreach (var operationCodeInfo in operationCodeInfos)
                 {
                     if (operationCodeInfo.Name == type)
