@@ -55,6 +55,8 @@ namespace GameFrameX.ProtoExport
                 }
             }
 
+            Console.WriteLine("导出成功，按任意键退出");
+            Console.ReadKey();
             return 0;
         }
     }
