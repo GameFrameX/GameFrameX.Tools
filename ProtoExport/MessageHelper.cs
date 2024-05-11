@@ -55,12 +55,52 @@ public static class MessageHelper
         ParseEnum(proto, operationCodeInfo.OperationCodeInfos);
 
         // 使用正则表达式提取消息类型
-        ParseMessage(proto, operationCodeInfo.OperationCodeInfos, operationCodeInfo.Start);
+        ParseMessage(proto, operationCodeInfo.OperationCodeInfos);
 
         ParseComment(proto, operationCodeInfo.OperationCodeInfos);
 
-        // Console.WriteLine(JsonSerializer.Serialize(operationCodeInfo));
+        // 消息码排序配对
+        MessageIdHandler(operationCodeInfo.OperationCodeInfos, operationCodeInfo.Start);
         return operationCodeInfo;
+    }
+
+    private static void MessageIdHandler(List<OperationCodeInfo> operationCodeInfos, int start)
+    {
+        foreach (var operationCodeInfo in operationCodeInfos)
+        {
+            if (operationCodeInfo.IsMessage)
+            {
+                if (operationCodeInfo.Opcode > 0)
+                {
+                    continue;
+                }
+
+                operationCodeInfo.Opcode = start;
+                if (operationCodeInfo.IsRequest)
+                {
+                    operationCodeInfo.ResponseMessage = FindResponse(operationCodeInfos, operationCodeInfo.MessageName);
+                    if (operationCodeInfo.ResponseMessage != null)
+                    {
+                        operationCodeInfo.ResponseMessage.Opcode = operationCodeInfo.Opcode;
+                    }
+                }
+
+                start++;
+            }
+        }
+    }
+
+    private static OperationCodeInfo? FindResponse(List<OperationCodeInfo> operationCodeInfos, string messageName)
+    {
+        foreach (var operationCodeInfo in operationCodeInfos)
+        {
+            if (operationCodeInfo.IsMessage && operationCodeInfo.IsResponse && operationCodeInfo.MessageName == messageName)
+            {
+                return operationCodeInfo;
+            }
+        }
+
+        return default;
     }
 
     private static void ParseComment(string proto, List<OperationCodeInfo> operationCodeInfos)
@@ -124,7 +164,7 @@ public static class MessageHelper
         }
     }
 
-    private static void ParseMessage(string proto, List<OperationCodeInfo> codes, int start)
+    private static void ParseMessage(string proto, List<OperationCodeInfo> codes)
     {
         MatchCollection messageMatches = Regex.Matches(proto, MessagePattern, RegexOptions.Singleline);
         foreach (Match match in messageMatches)
@@ -136,7 +176,6 @@ public static class MessageHelper
             OperationCodeInfo info = new OperationCodeInfo();
             codes.Add(info);
             info.Name = messageName;
-            info.Opcode = start++;
             foreach (var line in blockContent.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
                 OperationField field = new OperationField();

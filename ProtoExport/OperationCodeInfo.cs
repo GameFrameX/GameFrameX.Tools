@@ -17,6 +17,8 @@ namespace GameFrameX.ProtoExport
     /// </summary>
     public class OperationCodeInfo
     {
+        private string _name;
+
         public OperationCodeInfo(bool isEnum = false) : this()
         {
             IsEnum = isEnum;
@@ -28,10 +30,11 @@ namespace GameFrameX.ProtoExport
             Description = string.Empty;
         }
 
-        public bool IsRequest
-        {
-            get { return Name.StartsWith("Req") || Name.StartsWith("C2S_"); }
-        }
+        public bool IsRequest { get; private set; }
+
+        public bool IsResponse { get; private set; }
+
+        public bool IsMessage => IsRequest || IsResponse;
 
         public string ParentClass
         {
@@ -47,7 +50,7 @@ namespace GameFrameX.ProtoExport
                     return "IRequestMessage";
                 }
 
-                if (Name.StartsWith("Res") || Name.StartsWith("S2C_"))
+                if (Name.StartsWith("Resp") || Name.StartsWith("S2C_"))
                 {
                     return "IResponseMessage";
                 }
@@ -59,9 +62,41 @@ namespace GameFrameX.ProtoExport
         }
 
         /// <summary>
+        /// 消息名称，用于请求和相应配对
+        /// </summary>
+        public string MessageName { get; private set; }
+
+        /// <summary>
         /// 名称
         /// </summary>
-        public string Name { get; set; }
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                IsRequest = Name.StartsWith("Req") || Name.StartsWith("C2S_");
+                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_");
+                if (IsRequest)
+                {
+                    if (Name.StartsWith("Req"))
+                    {
+                        MessageName = Name[3..];
+                    }
+                    else if (Name.StartsWith("C2S_"))
+                    {
+                        MessageName = Name[4..];
+                    }
+                }
+                else
+                {
+                    if (Name.StartsWith("Resp") || Name.StartsWith("S2C_"))
+                    {
+                        MessageName = Name[4..];
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// 操作码
@@ -82,6 +117,8 @@ namespace GameFrameX.ProtoExport
         /// 注释
         /// </summary>
         public string Description { get; set; } = string.Empty;
+
+        public OperationCodeInfo? ResponseMessage { get; set; }
     }
 
     public class OperationField
