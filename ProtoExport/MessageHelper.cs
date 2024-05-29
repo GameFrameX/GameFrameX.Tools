@@ -99,14 +99,14 @@ public static class MessageHelper
                 }
 
                 operationCodeInfo.Opcode = start;
-                if (operationCodeInfo.IsRequest)
-                {
-                    operationCodeInfo.ResponseMessage = FindResponse(operationCodeInfos, operationCodeInfo.MessageName);
-                    if (operationCodeInfo.ResponseMessage != null)
-                    {
-                        operationCodeInfo.ResponseMessage.Opcode = operationCodeInfo.Opcode;
-                    }
-                }
+                // if (operationCodeInfo.IsRequest)
+                // {
+                //     operationCodeInfo.ResponseMessage = FindResponse(operationCodeInfos, operationCodeInfo.MessageName);
+                //     if (operationCodeInfo.ResponseMessage != null)
+                //     {
+                //         operationCodeInfo.ResponseMessage.Opcode = operationCodeInfo.Opcode;
+                //     }
+                // }
 
                 start++;
             }
