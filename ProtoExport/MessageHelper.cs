@@ -11,6 +11,7 @@ public static class MessageHelper
     private const string MessagePattern = @"message\s+(\w+)\s*\{\s*([^}]+)\s*\}";
     private const string CommentPattern = @"//([^\n]*)\n\s*(enum|message)\s+(\w+)\s*{";
     private const string StartPattern = @"option start = (\d+);";
+    private const string ModulePattern = @"option module = (\d+);";
     private const string PackagePattern = @"package (\w+);";
 
 
@@ -52,6 +53,26 @@ public static class MessageHelper
             throw new Exception("Start not found==>example: option start = 100");
         }
 
+        // 使用正则表达式提取module
+        Match moduleMatch = Regex.Match(proto, ModulePattern, RegexOptions.Singleline);
+        if (moduleMatch.Success)
+        {
+            Console.WriteLine($"Module: {moduleMatch.Groups[1].Value}");
+            if (ushort.TryParse(moduleMatch.Groups[1].Value, out var value))
+            {
+                operationCodeInfo.Module = value;
+            }
+            else
+            {
+                Console.WriteLine("Module range error");
+                throw new ArgumentOutOfRangeException("module", "Module range error==>module >= 0 and module <= 65535");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Module not found");
+            throw new Exception("Module not found==>example: option module = 100");
+        }
 
         // 使用正则表达式提取枚举类型
         ParseEnum(proto, operationCodeInfo.OperationCodeInfos);
