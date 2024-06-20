@@ -50,7 +50,7 @@ namespace GameFrameX.ProtoExport
                     return "IRequestMessage";
                 }
 
-                if (Name.StartsWith("Resp") || Name.StartsWith("S2C_"))
+                if (Name.StartsWith("Resp") || Name.StartsWith("S2C_") || Name.StartsWith("Notify"))
                 {
                     return "IResponseMessage";
                 }
@@ -76,7 +76,7 @@ namespace GameFrameX.ProtoExport
             {
                 _name = value;
                 IsRequest = Name.StartsWith("Req") || Name.StartsWith("C2S_");
-                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_");
+                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_") || Name.StartsWith("Notify");
                 if (IsRequest)
                 {
                     if (Name.StartsWith("Req"))
