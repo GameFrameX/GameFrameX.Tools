@@ -77,7 +77,13 @@ namespace GameFrameX.ProtoExport
                             sb.Append($"\t\t/// {operationField.Description}\n");
                             sb.Append($"\t\t/// </summary>\n");
                             sb.Append($"\t\t[ProtoMember({operationField.Members})]\n");
-                            sb.Append($"\t\tpublic {operationField.Type} {operationField.Name} {{ get; set; }}\n\n");
+                            string defaultValue = string.Empty;
+                            if (operationField.IsKv)
+                            {
+                                defaultValue = $" = new {operationField.Type}();";
+                            }
+
+                            sb.Append($"\t\tpublic {operationField.Type} {operationField.Name} {{ get; set; }}{defaultValue}\n\n");
                         }
                     }
 
