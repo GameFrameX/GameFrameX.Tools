@@ -211,6 +211,10 @@ public static class MessageHelper
                             else
                             {
                                 field.Type = Utility.ConvertType(key + fieldSplitStrings[1].Trim());
+                                if (key.Trim().StartsWith("map"))
+                                {
+                                    field.IsKv = true;
+                                }
                             }
 
 

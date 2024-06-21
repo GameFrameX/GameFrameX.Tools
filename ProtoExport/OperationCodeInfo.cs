@@ -155,5 +155,10 @@ namespace GameFrameX.ProtoExport
         /// 是否是重复
         /// </summary>
         public bool IsRepeated { get; set; }
+
+        /// <summary>
+        /// 是否是kv键值对
+        /// </summary>
+        public bool IsKv { get; set; }
     }
 }
