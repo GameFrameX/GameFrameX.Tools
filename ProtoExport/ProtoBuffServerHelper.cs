@@ -49,12 +49,12 @@ namespace GameFrameX.ProtoExport
                     sb.Append($"\t[ProtoContract]\n");
                     if (string.IsNullOrEmpty(operationCodeInfo.ParentClass))
                     {
-                        sb.AppendLine($"\tpublic partial class {operationCodeInfo.Name}");
+                        sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name}");
                     }
                     else
                     {
                         sb.AppendLine($"\t[MessageTypeHandler({(operationCodeInfoList.Module << 16) + operationCodeInfo.Opcode})]");
-                        sb.AppendLine($"\tpublic partial class {operationCodeInfo.Name} : MessageObject, {operationCodeInfo.ParentClass}");
+                        sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name} : MessageObject, {operationCodeInfo.ParentClass}");
                     }
 
                     sb.AppendLine("\t{");
