@@ -33,8 +33,9 @@ namespace GameFrameX.ProtoExport
         public bool IsRequest { get; private set; }
 
         public bool IsResponse { get; private set; }
+        public bool IsNotify { get; private set; }
 
-        public bool IsMessage => IsRequest || IsResponse;
+        public bool IsMessage => IsRequest || IsResponse || IsNotify;
 
         public string ParentClass
         {
@@ -50,9 +51,13 @@ namespace GameFrameX.ProtoExport
                     return "IRequestMessage";
                 }
 
-                if (Name.StartsWith("Resp") || Name.StartsWith("S2C_") || Name.StartsWith("Notify"))
+                if (Name.StartsWith("Resp") || Name.StartsWith("S2C_"))
                 {
                     return "IResponseMessage";
+                }
+                else if (Name.StartsWith("Notify"))
+                {
+                    return "INotifyMessage";
                 }
                 else
                 {
@@ -76,7 +81,8 @@ namespace GameFrameX.ProtoExport
             {
                 _name = value;
                 IsRequest = Name.StartsWith("Req") || Name.StartsWith("C2S_");
-                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_") || Name.StartsWith("Notify");
+                IsNotify = Name.StartsWith("Notify");
+                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_") || IsNotify;
                 if (IsRequest)
                 {
                     if (Name.StartsWith("Req"))
