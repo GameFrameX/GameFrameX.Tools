@@ -7,7 +7,6 @@ namespace GameFrameX.ProtoExport
             OperationCodeInfos = new List<OperationCodeInfo>();
         }
 
-        public int Start { get; set; }
         public ushort Module { get; set; }
         public List<OperationCodeInfo> OperationCodeInfos { get; set; }
         public string OutputPath { get; set; }

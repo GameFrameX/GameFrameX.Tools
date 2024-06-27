@@ -19,45 +19,25 @@ public static class MessageHelper
     {
         var packageMatch = Regex.Match(proto, PackagePattern, RegexOptions.Singleline);
 
-        if (packageMatch.Success)
-        {
-            Console.WriteLine($"Package: {packageMatch.Groups[1].Value}");
-            var packageName = packageMatch.Groups[1].Value.Trim();
-            if (packageName != fileName)
-            {
-                Console.WriteLine("PackageName and fileName do not match");
-                throw new Exception("PackageName and fileName do not match==>example: package {" + fileName + "};");
-            }
-        }
-        else
+        if (!packageMatch.Success)
         {
             Console.WriteLine("Package not found");
             throw new Exception("Package not found==>example: package {" + fileName + "};");
         }
+
+       
+
 
         OperationCodeInfoList operationCodeInfo = new OperationCodeInfoList
         {
             OutputPath = Path.Combine(filePath, fileName)
         };
 
-        // 使用正则表达式提取start
-        Match startMatch = Regex.Match(proto, StartPattern, RegexOptions.Singleline);
-        if (startMatch.Success)
-        {
-            Console.WriteLine($"Start: {startMatch.Groups[1].Value}");
-            operationCodeInfo.Start = int.Parse(startMatch.Groups[1].Value);
-        }
-        else
-        {
-            Console.WriteLine("Start not found");
-            throw new Exception("Start not found==>example: option start = 100");
-        }
-
         // 使用正则表达式提取module
         Match moduleMatch = Regex.Match(proto, ModulePattern, RegexOptions.Singleline);
         if (moduleMatch.Success)
         {
-            Console.WriteLine($"Module: {moduleMatch.Groups[1].Value}");
+            
             if (ushort.TryParse(moduleMatch.Groups[1].Value, out var value))
             {
                 operationCodeInfo.Module = value;
@@ -73,7 +53,7 @@ public static class MessageHelper
             Console.WriteLine("Module not found");
             throw new Exception("Module not found==>example: option module = 100");
         }
-
+        Console.WriteLine($"Package: {packageMatch.Groups[1].Value} => Module: {moduleMatch.Groups[1].Value}");
         // 使用正则表达式提取枚举类型
         ParseEnum(proto, operationCodeInfo.OperationCodeInfos);
 
@@ -83,7 +63,7 @@ public static class MessageHelper
         ParseComment(proto, operationCodeInfo.OperationCodeInfos);
 
         // 消息码排序配对
-        MessageIdHandler(operationCodeInfo.OperationCodeInfos, operationCodeInfo.Start);
+        MessageIdHandler(operationCodeInfo.OperationCodeInfos, 1);
         return operationCodeInfo;
     }
 
