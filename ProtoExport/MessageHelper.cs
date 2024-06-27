@@ -228,6 +228,16 @@ public static class MessageHelper
                     }
                 }
             }
+
+            if (info.IsResponse && !info.IsNotify)
+            {
+                OperationField field = new OperationField();
+                field.Description = "返回的错误码";
+                field.Name = "ErrorCode";
+                field.Type = "int";
+                field.Members = 888;
+                info.Fields.Add(field);
+            }
         }
     }
 }
