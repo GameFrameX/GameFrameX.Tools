@@ -19,34 +19,35 @@ namespace GameFrameX.ProtoExport
 
 
             sb.AppendLine();
-            sb.Append($"namespace {namespaceName}\n");
-            sb.Append("{\n");
+            sb.AppendLine($"namespace {namespaceName}");
+            sb.AppendLine("{");
 
             foreach (var operationCodeInfo in operationCodeInfoList.OperationCodeInfos)
             {
                 if (operationCodeInfo.IsEnum)
                 {
-                    sb.Append($"\t/// <summary>\n");
-                    sb.Append($"\t/// {operationCodeInfo.Description}\n");
-                    sb.Append($"\t/// </summary>\n");
+                    sb.AppendLine($"\t/// <summary>");
+                    sb.AppendLine($"\t/// {operationCodeInfo.Description}");
+                    sb.AppendLine($"\t/// </summary>");
                     sb.AppendLine($"\tpublic enum {operationCodeInfo.Name}");
                     sb.AppendLine("\t{");
                     foreach (var operationField in operationCodeInfo.Fields)
                     {
-                        sb.Append($"\t\t/// <summary>\n");
-                        sb.Append($"\t\t/// {operationField.Description}\n");
-                        sb.Append($"\t\t/// </summary>\n");
-                        sb.Append($"\t\t{operationField.Type} = {operationField.Members}, \n");
+                        sb.AppendLine($"\t\t/// <summary>");
+                        sb.AppendLine($"\t\t/// {operationField.Description}");
+                        sb.AppendLine($"\t\t/// </summary>");
+                        sb.AppendLine($"\t\t{operationField.Type} = {operationField.Members}, ");
                     }
 
-                    sb.AppendLine("\t}\n");
+                    sb.AppendLine("\t}");
+                    sb.AppendLine();
                 }
                 else
                 {
-                    sb.Append($"\t/// <summary>\n");
-                    sb.Append($"\t/// {operationCodeInfo.Description}\n");
-                    sb.Append($"\t/// </summary>\n");
-                    sb.Append($"\t[ProtoContract]\n");
+                    sb.AppendLine($"\t/// <summary>");
+                    sb.AppendLine($"\t/// {operationCodeInfo.Description}");
+                    sb.AppendLine($"\t/// </summary>");
+                    sb.AppendLine($"\t[ProtoContract]");
                     if (string.IsNullOrEmpty(operationCodeInfo.ParentClass))
                     {
                         sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name}");
@@ -65,35 +66,35 @@ namespace GameFrameX.ProtoExport
                             continue;
                         }
 
+                        sb.AppendLine($"\t\t/// <summary>");
+                        sb.AppendLine($"\t\t/// {operationField.Description}");
+                        sb.AppendLine($"\t\t/// </summary>");
+                        sb.AppendLine($"\t\t[ProtoMember({operationField.Members})]");
                         if (operationField.IsRepeated)
                         {
-                            sb.Append($"\t\t/// <summary>\n");
-                            sb.Append($"\t\t/// {operationField.Description}\n");
-                            sb.Append($"\t\t/// </summary>\n");
-                            sb.Append($"\t\t[ProtoMember({operationField.Members})]\n");
-                            sb.Append($"\t\tpublic List<{operationField.Type}> {operationField.Name} = new List<{operationField.Type}>();\n\n");
+                            sb.AppendLine($"\t\tpublic List<{operationField.Type}> {operationField.Name} = new List<{operationField.Type}>();");
                         }
                         else
                         {
-                            sb.Append($"\t\t/// <summary>\n");
-                            sb.Append($"\t\t/// {operationField.Description}\n");
-                            sb.Append($"\t\t/// </summary>\n");
-                            sb.Append($"\t\t[ProtoMember({operationField.Members})]\n");
                             string defaultValue = string.Empty;
                             if (operationField.IsKv)
                             {
                                 defaultValue = $" = new {operationField.Type}();";
                             }
 
-                            sb.Append($"\t\tpublic {operationField.Type} {operationField.Name} {{ get; set; }}{defaultValue}\n\n");
+                            sb.AppendLine($"\t\tpublic {operationField.Type} {operationField.Name} {{ get; set; }}{defaultValue}");
                         }
+
+                        sb.AppendLine();
                     }
 
-                    sb.AppendLine("\t}\n");
+                    sb.AppendLine("\t}");
+                    sb.AppendLine();
                 }
             }
 
-            sb.Append("}\n");
+            sb.Append("}");
+            sb.AppendLine();
 
             File.WriteAllText(operationCodeInfoList.OutputPath + ".cs", sb.ToString(), Encoding.UTF8);
         }
