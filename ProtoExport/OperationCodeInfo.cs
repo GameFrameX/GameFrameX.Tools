@@ -129,6 +129,8 @@ namespace GameFrameX.ProtoExport
 
     public class OperationField
     {
+        private int _members;
+
         /// <summary>
         /// 名称
         /// </summary>
@@ -155,7 +157,18 @@ namespace GameFrameX.ProtoExport
         /// <summary>
         /// 成员编码
         /// </summary>
-        public int Members { get; set; }
+        public int Members
+        {
+            get => _members;
+            set
+            {
+                _members = value;
+                if (value >= 800)
+                {
+                    throw new Exception("成员编码不能大于800");
+                }
+            }
+        }
 
         /// <summary>
         /// 是否是重复
