@@ -115,7 +115,7 @@ namespace GameFrameX.ProtoExport
                 IsRequest = Name.StartsWith("Req") || Name.StartsWith("C2S_");
                 IsNotify = Name.StartsWith("Notify");
                 IsHeartbeat = Name.Contains("Heartbeat", StringComparison.OrdinalIgnoreCase);
-                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_") || IsNotify || IsHeartbeat;
+                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_") || IsNotify || (IsHeartbeat && !IsRequest);
                 if (IsRequest)
                 {
                     if (Name.StartsWith("Req"))
