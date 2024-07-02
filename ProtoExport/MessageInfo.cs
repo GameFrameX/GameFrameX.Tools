@@ -194,7 +194,7 @@ namespace GameFrameX.ProtoExport
             set
             {
                 _members = value;
-                if (value >= 800)
+                if (value >= 800 && Name != "ErrorCode")
                 {
                     throw new Exception("成员编码不能大于800");
                 }
