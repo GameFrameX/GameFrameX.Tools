@@ -8,7 +8,7 @@ namespace GameFrameX.ProtoExport
     [Mode(ModeType.Server)]
     internal class ProtoBuffServerHelper : IProtoGenerateHelper
     {
-        public void Run(OperationCodeInfoList operationCodeInfoList, string outputPath, string namespaceName = "Hotfix")
+        public void Run(MessageInfoList messageInfoList, string outputPath, string namespaceName = "Hotfix")
         {
             StringBuilder sb = new StringBuilder();
 
@@ -22,7 +22,7 @@ namespace GameFrameX.ProtoExport
             sb.AppendLine($"namespace {namespaceName}");
             sb.AppendLine("{");
 
-            foreach (var operationCodeInfo in operationCodeInfoList.OperationCodeInfos)
+            foreach (var operationCodeInfo in messageInfoList.Infos)
             {
                 if (operationCodeInfo.IsEnum)
                 {
@@ -54,7 +54,7 @@ namespace GameFrameX.ProtoExport
                     }
                     else
                     {
-                        sb.AppendLine($"\t[MessageTypeHandler({(operationCodeInfoList.Module << 16) + operationCodeInfo.Opcode})]");
+                        sb.AppendLine($"\t[MessageTypeHandler({(messageInfoList.Module << 16) + operationCodeInfo.Opcode})]");
                         sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name} : MessageObject, {operationCodeInfo.ParentClass}");
                     }
 
@@ -96,7 +96,7 @@ namespace GameFrameX.ProtoExport
             sb.Append("}");
             sb.AppendLine();
 
-            File.WriteAllText(operationCodeInfoList.OutputPath + ".cs", sb.ToString(), Encoding.UTF8);
+            File.WriteAllText(messageInfoList.OutputPath + ".cs", sb.ToString(), Encoding.UTF8);
         }
     }
 }
