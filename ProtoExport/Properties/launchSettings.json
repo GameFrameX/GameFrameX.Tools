@@ -2,15 +2,15 @@
   "profiles": {
     "ProtoServerToolsApp": {
       "commandName": "Project",
-      "commandLineArgs": "-mode server -inputPath ./../../../../../Protobuf -outputPath ./../../../../../Server/GameFrameX.Proto/Proto -n GameFrameX.Proto.Proto -isGenerateErrorCode true"
+      "commandLineArgs": "-mode server -inputPath ./../../../../../Protobuf -outputPath ./../../../../../Server/GameFrameX.Proto/Proto -namespaceName GameFrameX.Proto.Proto -isGenerateErrorCode true"
     },
     "ProtoUnityToolsApp": {
       "commandName": "Project",
-      "commandLineArgs": "-mode unity -inputPath ./../../../../../Protobuf -outputPath ./../../../../../Unity/Assets/Hotfix/Proto -n Hotfix.Proto -isGenerateErrorCode true"
+      "commandLineArgs": "-mode unity -inputPath ./../../../../../Protobuf -outputPath ./../../../../../Unity/Assets/Hotfix/Proto -namespaceName Hotfix.Proto -isGenerateErrorCode true"
     },
     "ProtoTypeScriptToolsApp": {
        "commandName": "Project",
-       "commandLineArgs":"-mode typescript -inputPath ./../../../../../Protobuf -outputPath ./../../../../../Laya/src/gameframex/protobuf -n '' -isGenerateErrorCode true"
+       "commandLineArgs":"-mode typescript -inputPath ./../../../../../Protobuf -outputPath ./../../../../../Laya/src/gameframex/protobuf -namespaceName '' -isGenerateErrorCode true"
      }
   }
 }
