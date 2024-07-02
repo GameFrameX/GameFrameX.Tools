@@ -219,7 +219,7 @@ public static partial class MessageHelper
                 MessageMember field = new MessageMember();
                 field.Description = "返回的错误码";
                 field.Name = "ErrorCode";
-                field.Type = "int";
+                field.Type = Utility.ConvertType("int32");
                 field.Members = 888;
                 info.Fields.Add(field);
             }
