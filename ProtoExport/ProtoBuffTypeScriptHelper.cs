@@ -8,7 +8,7 @@ namespace GameFrameX.ProtoExport
     [Mode(ModeType.TypeScript)]
     internal class ProtoBuffTypeScriptHelper : IProtoGenerateHelper
     {
-        public void Run(OperationCodeInfoList operationCodeInfoList, string outputPath, string namespaceName)
+        public void Run(MessageInfoList messageInfoList, string outputPath, string namespaceName)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("import IRequestMessage from \"../network/IRequestMessage\";\n");
@@ -18,7 +18,7 @@ namespace GameFrameX.ProtoExport
             sb.Append("import RegisterResponseMessageClass from \"../network/RegisterResponseMessageClass\";\n");
             // sb.Append($"namespace {namespaceName} {'{'}\n");
 
-            foreach (var operationCodeInfo in operationCodeInfoList.OperationCodeInfos)
+            foreach (var operationCodeInfo in messageInfoList.Infos)
             {
                 if (operationCodeInfo.IsEnum)
                 {
@@ -94,7 +94,7 @@ namespace GameFrameX.ProtoExport
 
             // sb.Append("}\n");
 
-            File.WriteAllText(operationCodeInfoList.OutputPath + ".ts", sb.ToString(), Encoding.UTF8);
+            File.WriteAllText(messageInfoList.OutputPath + ".ts", sb.ToString(), Encoding.UTF8);
         }
 
         static string ConvertType(string type)

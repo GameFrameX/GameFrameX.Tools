@@ -11,7 +11,8 @@ namespace GameFrameX.ProtoExport
             var launcherOptions = Parser.Default.ParseArguments<LauncherOptions>(args).Value;
             if (launcherOptions == null)
             {
-                return 0;
+                Console.WriteLine("参数错误，解析失败");
+                return 1;
             }
 
             if (!Enum.TryParse<ModeType>(launcherOptions.Mode, true, out var modeType))
@@ -40,7 +41,7 @@ namespace GameFrameX.ProtoExport
             var files = Directory.GetFiles(launcherOptions.InputPath, "*.proto", SearchOption.AllDirectories);
             foreach (var file in files)
             {
-                var operationCodeInfo = MessageHelper.Parse(File.ReadAllText(file), Path.GetFileNameWithoutExtension(file), launcherOptions.OutputPath);
+                var operationCodeInfo = MessageHelper.Parse(File.ReadAllText(file), Path.GetFileNameWithoutExtension(file), launcherOptions.OutputPath, launcherOptions.IsGenerateErrorCode);
                 switch (modeType)
                 {
                     case ModeType.Server:

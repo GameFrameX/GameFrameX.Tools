@@ -2,7 +2,7 @@
 
 namespace GameFrameX.ProtoExport;
 
-public static class MessageHelper
+public static partial class MessageHelper
 {
     // 正则表达式匹配enums
     private const string EnumPattern = @"enum\s+(\w+)\s+\{([^}]*)\}";
@@ -15,7 +15,7 @@ public static class MessageHelper
     private const string PackagePattern = @"package (\w+);";
 
 
-    public static OperationCodeInfoList Parse(string proto, string fileName, string filePath)
+    public static MessageInfoList Parse(string proto, string fileName, string filePath, bool isGenerateErrorCode)
     {
         var packageMatch = Regex.Match(proto, PackagePattern, RegexOptions.Singleline);
 
@@ -25,10 +25,7 @@ public static class MessageHelper
             throw new Exception("Package not found==>example: package {" + fileName + "};");
         }
 
-       
-
-
-        OperationCodeInfoList operationCodeInfo = new OperationCodeInfoList
+        MessageInfoList messageInfo = new MessageInfoList
         {
             OutputPath = Path.Combine(filePath, fileName)
         };
@@ -37,10 +34,9 @@ public static class MessageHelper
         Match moduleMatch = Regex.Match(proto, ModulePattern, RegexOptions.Singleline);
         if (moduleMatch.Success)
         {
-            
             if (ushort.TryParse(moduleMatch.Groups[1].Value, out var value))
             {
-                operationCodeInfo.Module = value;
+                messageInfo.Module = value;
             }
             else
             {
@@ -53,21 +49,22 @@ public static class MessageHelper
             Console.WriteLine("Module not found");
             throw new Exception("Module not found==>example: option module = 100");
         }
+
         Console.WriteLine($"Package: {packageMatch.Groups[1].Value} => Module: {moduleMatch.Groups[1].Value}");
         // 使用正则表达式提取枚举类型
-        ParseEnum(proto, operationCodeInfo.OperationCodeInfos);
+        ParseEnum(proto, messageInfo.Infos);
 
         // 使用正则表达式提取消息类型
-        ParseMessage(proto, operationCodeInfo.OperationCodeInfos);
+        ParseMessage(proto, messageInfo.Infos, isGenerateErrorCode);
 
-        ParseComment(proto, operationCodeInfo.OperationCodeInfos);
+        ParseComment(proto, messageInfo.Infos);
 
         // 消息码排序配对
-        MessageIdHandler(operationCodeInfo.OperationCodeInfos, 1);
-        return operationCodeInfo;
+        MessageIdHandler(messageInfo.Infos, 10);
+        return messageInfo;
     }
 
-    private static void MessageIdHandler(List<OperationCodeInfo> operationCodeInfos, int start)
+    private static void MessageIdHandler(List<MessageInfo> operationCodeInfos, int start)
     {
         foreach (var operationCodeInfo in operationCodeInfos)
         {
@@ -93,20 +90,7 @@ public static class MessageHelper
         }
     }
 
-    private static OperationCodeInfo? FindResponse(List<OperationCodeInfo> operationCodeInfos, string messageName)
-    {
-        foreach (var operationCodeInfo in operationCodeInfos)
-        {
-            if (operationCodeInfo is { IsMessage: true, IsResponse: true } && operationCodeInfo.MessageName == messageName)
-            {
-                return operationCodeInfo;
-            }
-        }
-
-        return default;
-    }
-
-    private static void ParseComment(string proto, List<OperationCodeInfo> operationCodeInfos)
+    private static void ParseComment(string proto, List<MessageInfo> operationCodeInfos)
     {
         MatchCollection enumMatches = Regex.Matches(proto, CommentPattern, RegexOptions.Singleline);
         foreach (Match match in enumMatches)
@@ -127,12 +111,12 @@ public static class MessageHelper
         }
     }
 
-    private static void ParseEnum(string proto, List<OperationCodeInfo> codes)
+    private static void ParseEnum(string proto, List<MessageInfo> codes)
     {
         MatchCollection enumMatches = Regex.Matches(proto, EnumPattern, RegexOptions.Singleline);
         foreach (Match match in enumMatches)
         {
-            OperationCodeInfo info = new OperationCodeInfo(true);
+            MessageInfo info = new MessageInfo(true);
             codes.Add(info);
             string blockName = match.Groups[1].Value;
             info.Name = blockName;
@@ -141,7 +125,7 @@ public static class MessageHelper
             var blockContent = match.Groups[2].Value.Trim();
             foreach (var line in blockContent.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
-                OperationField field = new OperationField();
+                MessageMember field = new MessageMember();
                 info.Fields.Add(field);
                 // 解析注释
                 var lineSplit = line.Split("//", StringSplitOptions.RemoveEmptyEntries);
@@ -165,7 +149,7 @@ public static class MessageHelper
         }
     }
 
-    private static void ParseMessage(string proto, List<OperationCodeInfo> codes)
+    private static void ParseMessage(string proto, List<MessageInfo> codes, bool isGenerateErrorCode = false)
     {
         MatchCollection messageMatches = Regex.Matches(proto, MessagePattern, RegexOptions.Singleline);
         foreach (Match match in messageMatches)
@@ -174,12 +158,12 @@ public static class MessageHelper
             // Console.WriteLine("Message Name: " + match.Groups[1].Value);
             // Console.WriteLine("Contents: " + match.Groups[2].Value);
             var blockContent = match.Groups[2].Value.Trim();
-            OperationCodeInfo info = new OperationCodeInfo();
+            MessageInfo info = new MessageInfo();
             codes.Add(info);
             info.Name = messageName;
             foreach (var line in blockContent.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
-                OperationField field = new OperationField();
+                MessageMember field = new MessageMember();
                 info.Fields.Add(field);
                 // 解析注释
                 var lineSplit = line.Split("//", StringSplitOptions.RemoveEmptyEntries);
@@ -230,9 +214,9 @@ public static class MessageHelper
                 }
             }
 
-            if (info.IsResponse && !info.IsNotify)
+            if (isGenerateErrorCode && info.IsResponse && !info.IsNotify)
             {
-                OperationField field = new OperationField();
+                MessageMember field = new MessageMember();
                 field.Description = "返回的错误码";
                 field.Name = "ErrorCode";
                 field.Type = "int";
@@ -241,4 +225,7 @@ public static class MessageHelper
             }
         }
     }
+
+    [GeneratedRegex(ModulePattern, RegexOptions.Singleline)]
+    private static partial Regex MyRegex();
 }

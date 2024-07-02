@@ -1,42 +1,70 @@
 namespace GameFrameX.ProtoExport
 {
-    public class OperationCodeInfoList
+    public class MessageInfoList
     {
-        public OperationCodeInfoList()
-        {
-            OperationCodeInfos = new List<OperationCodeInfo>();
-        }
-
+        /// <summary>
+        /// 消息模块ID
+        /// </summary>
         public ushort Module { get; set; }
-        public List<OperationCodeInfo> OperationCodeInfos { get; set; }
+
+        /// <summary>
+        /// 消息列表
+        /// </summary>
+        public List<MessageInfo> Infos { get; set; } = new List<MessageInfo>(32);
+
+        /// <summary>
+        /// 输出路径
+        /// </summary>
         public string OutputPath { get; set; }
     }
 
     /// <summary>
     /// 消息码信息
     /// </summary>
-    public class OperationCodeInfo
+    public class MessageInfo
     {
         private string _name;
 
-        public OperationCodeInfo(bool isEnum = false) : this()
+        public MessageInfo(bool isEnum = false) : this()
         {
             IsEnum = isEnum;
         }
 
-        private OperationCodeInfo()
+        private MessageInfo()
         {
-            Fields = new List<OperationField>();
+            Fields = new List<MessageMember>();
             Description = string.Empty;
         }
 
+
+        /// <summary>
+        /// 是否是请求
+        /// </summary>
         public bool IsRequest { get; private set; }
 
+        /// <summary>
+        /// 是否是响应
+        /// </summary>
         public bool IsResponse { get; private set; }
+
+        /// <summary>
+        /// 是否是通知
+        /// </summary>
         public bool IsNotify { get; private set; }
 
+        /// <summary>
+        /// 是否是心跳
+        /// </summary>
+        public bool IsHeartbeat { get; private set; }
+
+        /// <summary>
+        /// 是否是消息
+        /// </summary>
         public bool IsMessage => IsRequest || IsResponse || IsNotify;
 
+        /// <summary>
+        /// 父类
+        /// </summary>
         public string ParentClass
         {
             get
@@ -46,25 +74,29 @@ namespace GameFrameX.ProtoExport
                     return string.Empty;
                 }
 
-                if (Name.StartsWith("Req") || Name.StartsWith("C2S_"))
+                string parentClass = string.Empty;
+                if (IsRequest)
                 {
-                    return "IRequestMessage";
+                    parentClass = "IRequestMessage";
+                }
+                else if (IsResponse)
+                {
+                    parentClass = "IResponseMessage";
+                }
+                else if (IsNotify)
+                {
+                    parentClass = "INotifyMessage";
                 }
 
-                if (Name.StartsWith("Resp") || Name.StartsWith("S2C_"))
+                if (IsHeartbeat && !string.IsNullOrEmpty(parentClass))
                 {
-                    return "IResponseMessage";
+                    parentClass += ", IHeartBeatMessage";
                 }
-                else if (Name.StartsWith("Notify"))
-                {
-                    return "INotifyMessage";
-                }
-                else
-                {
-                    return string.Empty;
-                }
+
+                return parentClass;
             }
         }
+
 
         /// <summary>
         /// 消息名称，用于请求和相应配对
@@ -82,7 +114,8 @@ namespace GameFrameX.ProtoExport
                 _name = value;
                 IsRequest = Name.StartsWith("Req") || Name.StartsWith("C2S_");
                 IsNotify = Name.StartsWith("Notify");
-                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_") || IsNotify;
+                IsHeartbeat = Name.Contains("Heartbeat", StringComparison.OrdinalIgnoreCase);
+                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_") || IsNotify || IsHeartbeat;
                 if (IsRequest)
                 {
                     if (Name.StartsWith("Req"))
@@ -117,17 +150,15 @@ namespace GameFrameX.ProtoExport
         /// <summary>
         /// 字段
         /// </summary>
-        public List<OperationField> Fields { get; set; } = new List<OperationField>();
+        public List<MessageMember> Fields { get; set; }
 
         /// <summary>
         /// 注释
         /// </summary>
-        public string Description { get; set; } = string.Empty;
-
-        public OperationCodeInfo? ResponseMessage { get; set; }
+        public string Description { get; set; }
     }
 
-    public class OperationField
+    public class MessageMember
     {
         private int _members;
 
