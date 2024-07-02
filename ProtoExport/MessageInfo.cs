@@ -88,7 +88,7 @@ namespace GameFrameX.ProtoExport
                     parentClass = "IResponseMessage";
                 }
 
-                if (IsHeartbeat && !IsRequest && !string.IsNullOrEmpty(parentClass))
+                if (IsHeartbeat && !string.IsNullOrEmpty(parentClass))
                 {
                     parentClass += ", IHeartBeatMessage";
                 }
