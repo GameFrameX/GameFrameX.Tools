@@ -27,7 +27,8 @@ public static partial class MessageHelper
 
         MessageInfoList messageInfo = new MessageInfoList
         {
-            OutputPath = Path.Combine(filePath, fileName)
+            OutputPath = Path.Combine(filePath, fileName),
+            ModuleName = packageMatch.Groups[1].Value,
         };
 
         // 使用正则表达式提取module
