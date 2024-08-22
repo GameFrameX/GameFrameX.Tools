@@ -39,9 +39,12 @@ namespace GameFrameX.ProtoExport
             }
 
             var files = Directory.GetFiles(launcherOptions.InputPath, "*.proto", SearchOption.AllDirectories);
+
+            var messageInfoLists = new List<MessageInfoList>(files.Length);
             foreach (var file in files)
             {
                 var operationCodeInfo = MessageHelper.Parse(File.ReadAllText(file), Path.GetFileNameWithoutExtension(file), launcherOptions.OutputPath, launcherOptions.IsGenerateErrorCode);
+                messageInfoLists.Add(operationCodeInfo);
                 switch (modeType)
                 {
                     case ModeType.Server:
@@ -55,6 +58,16 @@ namespace GameFrameX.ProtoExport
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
+            switch (modeType)
+            {
+                case ModeType.TypeScript:
+                    (ProtoGenerateHelper as ProtoBuffTypeScriptHelper)?.Post(messageInfoLists, launcherOptions.OutputPath);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
 
             Console.WriteLine("导出成功，按任意键退出");
             Console.ReadKey();
