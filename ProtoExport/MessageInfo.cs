@@ -8,6 +8,11 @@ namespace GameFrameX.ProtoExport
         public ushort Module { get; set; }
 
         /// <summary>
+        /// 模块名
+        /// </summary>
+        public string ModuleName { get; set; }
+
+        /// <summary>
         /// 消息列表
         /// </summary>
         public List<MessageInfo> Infos { get; set; } = new List<MessageInfo>(32);
