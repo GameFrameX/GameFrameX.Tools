@@ -13,10 +13,12 @@ namespace GameFrameX.ProtoExport
             StringBuilder sb = new StringBuilder();
             sb.Append("import IRequestMessage from \"../network/IRequestMessage\";\n");
             sb.Append("import IResponseMessage from \"../network/IResponseMessage\";\n");
+            sb.Append("import INotifyMessage from \"../network/INotifyMessage\";\n");
+            sb.Append("import IHeartBeatMessage from \"../network/IHeartBeatMessage\";\n");
             sb.Append("import MessageObject from \"../network/MessageObject\";\n");
-            sb.Append("import RegisterRequestMessageClass from \"../network/RegisterRequestMessageClass\";\n");
-            sb.Append("import RegisterResponseMessageClass from \"../network/RegisterResponseMessageClass\";\n");
-            // sb.Append($"namespace {namespaceName} {'{'}\n");
+            sb.Append("import ProtoMessageHelper from \"../network/ProtoMessageHelper\";\n");
+            sb.AppendLine();
+            sb.Append($"export namespace {messageInfoList.ModuleName} {'{'}\n");
 
             foreach (var operationCodeInfo in messageInfoList.Infos)
             {
@@ -42,14 +44,14 @@ namespace GameFrameX.ProtoExport
                     sb.Append($"\t/// <summary>\n");
                     sb.Append($"\t/// {operationCodeInfo.Description}\n");
                     sb.Append($"\t/// </summary>\n");
-                    if (operationCodeInfo.IsRequest)
-                    {
-                        sb.Append($"\t@RegisterRequestMessageClass({operationCodeInfo.Opcode})\n");
-                    }
-                    else
-                    {
-                        sb.Append($"\t@RegisterResponseMessageClass({operationCodeInfo.Opcode})\n");
-                    }
+                    // if (operationCodeInfo.IsRequest)
+                    // {
+                    //     sb.Append($"\t@RegisterRequestMessageClass({operationCodeInfo.Opcode})\n");
+                    // }
+                    // else
+                    // {
+                    //     sb.Append($"\t@RegisterResponseMessageClass({operationCodeInfo.Opcode})\n");
+                    // }
 
                     if (string.IsNullOrEmpty(operationCodeInfo.ParentClass))
                     {
@@ -59,6 +61,26 @@ namespace GameFrameX.ProtoExport
                     {
                         // sb.AppendLine($"\t[MessageTypeHandler({operationCodeInfo.Opcode})]");
                         sb.AppendLine($"\texport class {operationCodeInfo.Name} extends MessageObject implements {operationCodeInfo.ParentClass} {'{'}");
+                        sb.AppendLine();
+
+                        sb.Append($"\t\tpublic static register(): void{'{'}\n");
+                        if (operationCodeInfo.IsRequest)
+                        {
+                            sb.Append($"\t\t\tProtoMessageHelper.registerReqMessage('{messageInfoList.ModuleName}.{operationCodeInfo.Name}', {(messageInfoList.Module << 16) + operationCodeInfo.Opcode});\n");
+                        }
+                        else
+                        {
+                            sb.Append($"\t\t\tProtoMessageHelper.registerRespMessage('{messageInfoList.ModuleName}.{operationCodeInfo.Name}', {(messageInfoList.Module << 16) + operationCodeInfo.Opcode});\n");
+                        }
+
+                        sb.Append($"\t\t{'}'}\n");
+                        
+                        
+                        sb.Append($"\t\tpublic get PackageName(): string{'{'}\n");
+                        sb.Append($"\t\t\treturn '{messageInfoList.ModuleName}.{operationCodeInfo.Name}';\n");
+                        sb.Append($"\t\t{'}'}\n");
+
+                        sb.AppendLine();
                     }
 
                     foreach (var operationField in operationCodeInfo.Fields)
@@ -84,15 +106,12 @@ namespace GameFrameX.ProtoExport
                         }
                     }
 
-                    sb.Append($"\t\tpublic static get PackageName(): string{'{'}\n");
-                    sb.Append($"\t\t\treturn '{namespaceName}.{operationCodeInfo.Name}';\n");
-                    sb.Append($"\t\t{'}'}\n");
 
                     sb.AppendLine("\t}\n");
                 }
             }
 
-            // sb.Append("}\n");
+            sb.Append("}\n");
 
             File.WriteAllText(messageInfoList.OutputPath + ".ts", sb.ToString(), Encoding.UTF8);
         }
@@ -138,6 +157,34 @@ namespace GameFrameX.ProtoExport
             }
 
             return typeCs;
+        }
+
+
+        public void Post(List<MessageInfoList> operationCodeInfo, string launcherOptionsOutputPath)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            foreach (var messageInfoList in operationCodeInfo)
+            {
+                stringBuilder.AppendLine($"import {{ {messageInfoList.ModuleName} }} from \"./{messageInfoList.ModuleName}_{messageInfoList.Module}\";");
+            }
+
+            stringBuilder.AppendLine();
+            stringBuilder.AppendLine("export default class ProtoMessageRegister {\n    public static register(): void{");
+
+            foreach (var messageInfoList in operationCodeInfo)
+            {
+                foreach (var messageInfo in messageInfoList.Infos)
+                {
+                    if (!string.IsNullOrEmpty(messageInfo.ParentClass))
+                    {
+                        stringBuilder.AppendLine($"\t\t{messageInfoList.ModuleName}.{messageInfo.Name}.register();");
+                    }
+                }
+            }
+
+            stringBuilder.AppendLine("    }\n}");
+            File.WriteAllText(launcherOptionsOutputPath + "/ProtoMessageRegister.ts", stringBuilder.ToString(), Encoding.UTF8);
         }
     }
 }
