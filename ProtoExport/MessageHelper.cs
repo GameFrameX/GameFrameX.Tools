@@ -29,6 +29,7 @@ public static partial class MessageHelper
         {
             OutputPath = Path.Combine(filePath, fileName),
             ModuleName = packageMatch.Groups[1].Value,
+            FileName = fileName,
         };
 
         // 使用正则表达式提取module
