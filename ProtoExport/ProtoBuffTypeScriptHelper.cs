@@ -166,12 +166,24 @@ namespace GameFrameX.ProtoExport
 
             foreach (var messageInfoList in operationCodeInfo)
             {
-                stringBuilder.AppendLine($"import {{ {messageInfoList.ModuleName} }} from \"./{messageInfoList.ModuleName}_{messageInfoList.Module}\";");
+                stringBuilder.Append($"import {{ {messageInfoList.ModuleName} }} from \"./{messageInfoList.ModuleName}_{messageInfoList.Module}\";\n");
             }
 
-            stringBuilder.AppendLine();
-            stringBuilder.AppendLine("export default class ProtoMessageRegister {\n    public static register(): void{");
+            stringBuilder.Append("\n");
+            stringBuilder.Append("export default class ProtoMessageRegister {\n");
+            stringBuilder.Append("\tpublic static getProtoBuffList(): string[] {\n");
 
+            stringBuilder.Append("\t\treturn [\n");
+
+            foreach (var messageInfoList in operationCodeInfo)
+            {
+                stringBuilder.Append($"\t\t\t\"resources/protobuf/{messageInfoList.FileName}.proto\",\n");
+            }
+
+            stringBuilder.Append("\t\t];\n");
+            stringBuilder.Append("\t}\n");
+            stringBuilder.Append("\n");
+            stringBuilder.Append("\tpublic static register(): void {\n");
             foreach (var messageInfoList in operationCodeInfo)
             {
                 foreach (var messageInfo in messageInfoList.Infos)
