@@ -73,12 +73,9 @@ namespace GameFrameX.ProtoExport
                             sb.Append($"\t\t\tProtoMessageHelper.registerRespMessage('{messageInfoList.ModuleName}.{operationCodeInfo.Name}', {(messageInfoList.Module << 16) + operationCodeInfo.Opcode});\n");
                         }
 
-                        sb.Append($"\t\t{'}'}\n");
+                        sb.Append($"\t\t{'}'}\n\n");
 
-
-                        sb.Append($"\t\tpublic get PackageName(): string{'{'}\n");
-                        sb.Append($"\t\t\treturn '{messageInfoList.ModuleName}.{operationCodeInfo.Name}';\n");
-                        sb.Append($"\t\t{'}'}\n");
+                        sb.Append($"\t\tpublic readonly PackageName: string = '{messageInfoList.ModuleName}.{operationCodeInfo.Name}';\n");
 
                         sb.Append("\n");
                     }
