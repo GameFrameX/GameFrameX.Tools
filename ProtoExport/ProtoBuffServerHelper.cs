@@ -98,5 +98,10 @@ namespace GameFrameX.ProtoExport
 
             File.WriteAllText(messageInfoList.OutputPath + ".cs", sb.ToString(), Encoding.UTF8);
         }
+
+        public void Post(List<MessageInfoList> operationCodeInfo, string launcherOptionsOutputPath)
+        {
+            
+        }
     }
 }
