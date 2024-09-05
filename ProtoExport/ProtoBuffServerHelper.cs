@@ -15,6 +15,7 @@ namespace GameFrameX.ProtoExport
             sb.AppendLine("using System;");
             sb.AppendLine("using ProtoBuf;");
             sb.AppendLine("using System.Collections.Generic;");
+            sb.AppendLine("using GameFrameX.NetWork.Abstractions;");
             sb.AppendLine("using GameFrameX.NetWork.Messages;");
 
 
