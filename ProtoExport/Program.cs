@@ -59,14 +59,7 @@ namespace GameFrameX.ProtoExport
                 }
             }
 
-            switch (modeType)
-            {
-                case ModeType.TypeScript:
-                    (ProtoGenerateHelper as ProtoBuffTypeScriptHelper)?.Post(messageInfoLists, launcherOptions.OutputPath);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            ProtoGenerateHelper?.Post(messageInfoLists, launcherOptions.OutputPath);
 
 
             Console.WriteLine("导出成功，按任意键退出");
