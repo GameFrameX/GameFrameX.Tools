@@ -82,7 +82,7 @@ namespace GameFrameX.ProtoExport
                             {
                                 defaultValue = $" = new {operationField.Type}();";
                             }
-
+                            sb.AppendLine($"\t\t[ProtoMap(DisableMap = true)]");
                             sb.AppendLine($"\t\tpublic {operationField.Type} {operationField.Name} {{ get; set; }}{defaultValue}");
                         }
 
