@@ -79,8 +79,9 @@ namespace GameFrameX.ProtoExport
                             if (operationField.IsKv)
                             {
                                 defaultValue = $" = new {operationField.Type}();";
+                                sb.AppendLine($"\t\t[ProtoMap(DisableMap = true)]");
                             }
-                            sb.AppendLine($"\t\t[ProtoMap(DisableMap = true)]");
+
                             sb.AppendLine($"\t\tpublic {operationField.Type} {operationField.Name} {{ get; set; }}{defaultValue}");
                         }
 
@@ -100,7 +101,6 @@ namespace GameFrameX.ProtoExport
 
         public void Post(List<MessageInfoList> operationCodeInfo, string launcherOptionsOutputPath)
         {
-            
         }
     }
 }
