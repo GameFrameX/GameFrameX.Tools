@@ -5,7 +5,7 @@ namespace GameFrameX.ProtoExport
         /// <summary>
         /// 消息模块ID
         /// </summary>
-        public ushort Module { get; set; }
+        public short Module { get; set; }
 
         /// <summary>
         /// 文件名
