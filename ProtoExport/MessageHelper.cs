@@ -11,7 +11,7 @@ public static partial class MessageHelper
     private const string MessagePattern = @"message\s+(\w+)\s*\{\s*([^}]+)\s*\}";
     private const string CommentPattern = @"//([^\n]*)\n\s*(enum|message)\s+(\w+)\s*{";
     private const string StartPattern = @"option start = (\d+);";
-    private const string ModulePattern = @"option module = (\d+);";
+    private const string ModulePattern = @"option module = (-?\d+);";
     private const string PackagePattern = @"package (\w+);";
 
 
@@ -36,14 +36,14 @@ public static partial class MessageHelper
         Match moduleMatch = Regex.Match(proto, ModulePattern, RegexOptions.Singleline);
         if (moduleMatch.Success)
         {
-            if (ushort.TryParse(moduleMatch.Groups[1].Value, out var value))
+            if (short.TryParse(moduleMatch.Groups[1].Value, out var value))
             {
                 messageInfo.Module = value;
             }
             else
             {
                 Console.WriteLine("Module range error");
-                throw new ArgumentOutOfRangeException("module", "Module range error==>module >= 0 and module <= 65535");
+                throw new ArgumentOutOfRangeException("module", $"Module range error==>module > {short.MinValue} and module < {short.MaxValue}");
             }
         }
         else
