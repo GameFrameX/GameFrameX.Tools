@@ -3,13 +3,13 @@
         xmlns:vm="using:ToolGUI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="300"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="400"
         x:Class="ToolGUI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         CanResize="False"
         WindowState="Normal"
         Icon="/Assets/logo.ico"
-        Title="ToolGUI">
+        Title="ToolGUIProto">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -29,7 +29,6 @@
         <!-- 第二行 -->
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
             <TextBlock Text="命名空间：" Width="100" VerticalAlignment="Center" />
-
             <TextBox Name="NameSpace" Width="300" VerticalAlignment="Center" />
         </StackPanel>
 
@@ -49,6 +48,11 @@
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
             <TextBlock Text="生成错误码?：" Width="100" VerticalAlignment="Center" />
             <CheckBox Name="IsGenerateErrorCode" VerticalAlignment="Center" IsChecked="True" />
+            <StackPanel Width="200"></StackPanel>
+            <Button
+                Click="HelpButton_OnClick"
+                Content="帮助文档"
+                Foreground="DarkBlue" />
         </StackPanel>
         <StackPanel>
             <Button

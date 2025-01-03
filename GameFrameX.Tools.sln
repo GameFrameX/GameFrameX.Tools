@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtoExport", "ProtoExport\ProtoExport.csproj", "{DF321DFA-1AB7-4135-8A6F-7A788F3D4DDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolGUI", "ToolGUI\ToolGUI.csproj", "{986FC612-FC98-41DD-894F-9DE6A55C9728}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolGUIProto", "ToolGUIProto\ToolGUIProto.csproj", "{986FC612-FC98-41DD-894F-9DE6A55C9728}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -5,6 +5,7 @@
     <Nullable>disable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/logo.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <LangVersion>10</LangVersion>
     <PublishSingleFile>true</PublishSingleFile>

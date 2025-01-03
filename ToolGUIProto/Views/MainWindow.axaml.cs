@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -108,5 +109,14 @@ public partial class MainWindow : Window
             this.NameSpace.Text = options.NamespaceName;
             this.IsGenerateErrorCode.IsChecked = options.IsGenerateErrorCode;
         }
+    }
+
+    private void HelpButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://gameframex.doc.alianblank.com/tools/proto/launcher-params.html",
+            UseShellExecute = true // 使用系统外壳来打开 URL
+        });
     }
 }
