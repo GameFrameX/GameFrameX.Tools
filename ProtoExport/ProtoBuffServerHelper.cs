@@ -49,6 +49,7 @@ namespace GameFrameX.ProtoExport
                     sb.AppendLine($"\t/// {operationCodeInfo.Description}");
                     sb.AppendLine($"\t/// </summary>");
                     sb.AppendLine($"\t[ProtoContract]");
+                    sb.AppendLine($"\t[System.ComponentModel.Description(\"{operationCodeInfo.Description}\")]");
                     if (string.IsNullOrEmpty(operationCodeInfo.ParentClass))
                     {
                         sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name}");
