@@ -71,6 +71,7 @@ namespace GameFrameX.ProtoExport
                         sb.AppendLine($"\t\t/// {operationField.Description}");
                         sb.AppendLine($"\t\t/// </summary>");
                         sb.AppendLine($"\t\t[ProtoMember({operationField.Members})]");
+                        sb.AppendLine($"\t\t[System.ComponentModel.Description(\"{operationField.Description}\")]");
                         if (operationField.IsRepeated)
                         {
                             sb.AppendLine($"\t\tpublic List<{operationField.Type}> {operationField.Name} {{ get; set; }} = new List<{operationField.Type}>();");
