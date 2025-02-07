@@ -30,6 +30,7 @@ namespace GameFrameX.ProtoExport
                     sb.AppendLine($"\t/// <summary>");
                     sb.AppendLine($"\t/// {operationCodeInfo.Description}");
                     sb.AppendLine($"\t/// </summary>");
+                    sb.AppendLine($"\t[System.ComponentModel.Description(\"{operationCodeInfo.Description}\")]");
                     sb.AppendLine($"\tpublic enum {operationCodeInfo.Name}");
                     sb.AppendLine("\t{");
                     foreach (var operationField in operationCodeInfo.Fields)
@@ -37,7 +38,8 @@ namespace GameFrameX.ProtoExport
                         sb.AppendLine($"\t\t/// <summary>");
                         sb.AppendLine($"\t\t/// {operationField.Description}");
                         sb.AppendLine($"\t\t/// </summary>");
-                        sb.AppendLine($"\t\t{operationField.Type} = {operationField.Members}, ");
+                        sb.AppendLine($"\t\t[System.ComponentModel.Description(\"{operationField.Description}\")]");
+                        sb.AppendLine($"\t\t{operationField.Type} = {operationField.Members},");
                     }
 
                     sb.AppendLine("\t}");
