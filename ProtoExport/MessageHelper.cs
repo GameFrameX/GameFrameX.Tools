@@ -133,6 +133,12 @@ public static partial class MessageHelper
             var blockContent = match.Groups[2].Value.Trim();
             foreach (var line in blockContent.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
+                if (line.TrimStart().StartsWith("//"))
+                {
+                    // 这个字段被注释
+                    continue;
+                }
+
                 MessageMember field = new MessageMember();
                 info.Fields.Add(field);
                 // 解析注释
@@ -180,6 +186,12 @@ public static partial class MessageHelper
             info.Name = messageName;
             foreach (var line in blockContent.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
+                if (line.TrimStart().StartsWith("//"))
+                {
+                    // 这个字段被注释
+                    continue;
+                }
+
                 MessageMember field = new MessageMember();
                 info.Fields.Add(field);
                 // 解析注释
