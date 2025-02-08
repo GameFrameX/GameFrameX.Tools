@@ -118,28 +118,24 @@ namespace GameFrameX.ProtoExport
         /// </summary>
         public string Name
         {
-            get => _name;
+            get { return _name; }
             set
             {
                 _name = value;
-                IsRequest = Name.StartsWith("Req") || Name.StartsWith("C2S_");
+                IsRequest = Name.StartsWith("Req");
                 IsNotify = Name.StartsWith("Notify");
                 IsHeartbeat = Name.Contains("Heartbeat", StringComparison.OrdinalIgnoreCase);
-                IsResponse = Name.StartsWith("Resp") || Name.StartsWith("S2C_") || IsNotify || (IsHeartbeat && !IsRequest);
+                IsResponse = Name.StartsWith("Resp") || IsNotify || (IsHeartbeat && !IsRequest);
                 if (IsRequest)
                 {
                     if (Name.StartsWith("Req"))
                     {
                         MessageName = Name[3..];
                     }
-                    else if (Name.StartsWith("C2S_"))
-                    {
-                        MessageName = Name[4..];
-                    }
                 }
                 else
                 {
-                    if (Name.StartsWith("Resp") || Name.StartsWith("S2C_"))
+                    if (Name.StartsWith("Resp"))
                     {
                         MessageName = Name[4..];
                     }
