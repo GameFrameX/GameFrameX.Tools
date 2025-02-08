@@ -52,14 +52,15 @@ public static partial class MessageHelper
             throw new Exception("Module not found==>example: option module = 100");
         }
 
-        Console.WriteLine($"Package: {packageMatch.Groups[1].Value} => Module: {moduleMatch.Groups[1].Value}");
+        var packageName = packageMatch.Groups[1].Value;
+        Console.WriteLine($"Package: {packageName} => Module: {moduleMatch.Groups[1].Value}");
         // 使用正则表达式提取枚举类型
-        ParseEnum(proto, messageInfo.Infos);
+        ParseEnum(proto, packageName, messageInfo.Infos);
 
         // 使用正则表达式提取消息类型
-        ParseMessage(proto, messageInfo.Infos, isGenerateErrorCode);
+        ParseMessage(proto, packageName, messageInfo.Infos, isGenerateErrorCode);
 
-        ParseComment(proto, messageInfo.Infos);
+        ParseComment(proto, packageName, messageInfo.Infos);
 
         // 消息码排序配对
         MessageIdHandler(messageInfo.Infos, 10);
@@ -92,7 +93,7 @@ public static partial class MessageHelper
         }
     }
 
-    private static void ParseComment(string proto, List<MessageInfo> operationCodeInfos)
+    private static void ParseComment(string proto, string packageName, List<MessageInfo> operationCodeInfos)
     {
         MatchCollection enumMatches = Regex.Matches(proto, CommentPattern, RegexOptions.Singleline);
         foreach (Match match in enumMatches)
@@ -113,7 +114,7 @@ public static partial class MessageHelper
         }
     }
 
-    private static void ParseEnum(string proto, List<MessageInfo> codes)
+    private static void ParseEnum(string proto, string packageName, List<MessageInfo> codes)
     {
         MatchCollection enumMatches = Regex.Matches(proto, EnumPattern, RegexOptions.Singleline);
         foreach (Match match in enumMatches)
@@ -121,6 +122,11 @@ public static partial class MessageHelper
             MessageInfo info = new MessageInfo(true);
             codes.Add(info);
             string blockName = match.Groups[1].Value;
+            if (!Utility.IsCamelCase(blockName))
+            {
+                throw new Exception($"[{packageName}] 包的 [{blockName}] 枚举名称必须遵守 [Upper Camel Case 命名规则]\n");
+            }
+
             info.Name = blockName;
             // Console.WriteLine("Enum Name: " + match.Groups[1].Value);
             // Console.WriteLine("Contents: " + match.Groups[2].Value);
@@ -143,7 +149,13 @@ public static partial class MessageHelper
                     var fieldSplit = fieldType.Split('=', StringSplitOptions.RemoveEmptyEntries);
                     if (fieldSplit.Length > 1)
                     {
-                        field.Type = fieldSplit[0].Trim();
+                        var name = fieldSplit[0].Trim();
+                        if (!Utility.IsCamelCase(name))
+                        {
+                            throw new Exception($"[{packageName}] 包的 {name} 枚举字段名称必须遵守 [Upper Camel Case 命名规则]\n");
+                        }
+
+                        field.Type = name;
                         field.Members = int.Parse(fieldSplit[1].Replace(";", "").Trim());
                     }
                 }
@@ -151,17 +163,20 @@ public static partial class MessageHelper
         }
     }
 
-    private static void ParseMessage(string proto, List<MessageInfo> codes, bool isGenerateErrorCode = false)
+    private static void ParseMessage(string proto, string packageName, List<MessageInfo> codes, bool isGenerateErrorCode = false)
     {
         MatchCollection messageMatches = Regex.Matches(proto, MessagePattern, RegexOptions.Singleline);
         foreach (Match match in messageMatches)
         {
             string messageName = match.Groups[1].Value;
-            // Console.WriteLine("Message Name: " + match.Groups[1].Value);
-            // Console.WriteLine("Contents: " + match.Groups[2].Value);
             var blockContent = match.Groups[2].Value.Trim();
             MessageInfo info = new MessageInfo();
             codes.Add(info);
+            if (!Utility.IsCamelCase(messageName))
+            {
+                throw new Exception($"[{packageName}] 包的 [{messageName}] 消息名称必须遵守 [Upper Camel Case 命名规则]\n");
+            }
+
             info.Name = messageName;
             foreach (var line in blockContent.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -204,13 +219,25 @@ public static partial class MessageHelper
                                 }
                             }
 
+                            var name = fieldSplitStrings[2].Trim();
 
-                            field.Name = fieldSplitStrings[2].Trim();
+                            if (!Utility.IsCamelCase(name))
+                            {
+                                throw new Exception($"[{packageName}] 包的 [{messageName}] 消息的 [{name}] 字段名称必须遵守 [Upper Camel Case 命名规则]\n");
+                            }
+
+                            field.Name = name;
                         }
                         else if (fieldSplitStrings.Length > 1)
                         {
                             field.Type = Utility.ConvertType(fieldSplitStrings[0].Trim());
-                            field.Name = fieldSplitStrings[1].Trim();
+                            var name = fieldSplitStrings[1].Trim();
+                            if (!Utility.IsCamelCase(name))
+                            {
+                                throw new Exception($"[{packageName}] 包的 [{messageName}] 消息的 [{name}] 字段名称必须遵守 [Upper Camel Case 命名规则]\n");
+                            }
+
+                            field.Name = name;
                         }
                     }
                 }
@@ -227,7 +254,4 @@ public static partial class MessageHelper
             }
         }
     }
-
-    [GeneratedRegex(ModulePattern, RegexOptions.Singleline)]
-    private static partial Regex MyRegex();
 }

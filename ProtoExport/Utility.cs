@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace GameFrameX.ProtoExport
 {
     internal static class Utility
@@ -5,6 +7,20 @@ namespace GameFrameX.ProtoExport
         public static readonly char[] splitChars = { ' ', '\t' };
 
         public static readonly string[] splitNotesChars = { "//" };
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static bool IsCamelCase(string str)
+        {
+            // 定义一个正则表达式来匹配 Upper Camel Case 命名规则
+            string pattern = @"^[A-Z][a-zA-Z]*$";
+
+            return Regex.IsMatch(str, pattern);
+        }
 
         public static string ConvertType(string type)
         {
