@@ -8,6 +8,10 @@ namespace GameFrameX.ProtoExport
 
         public static readonly string[] splitNotesChars = { "//" };
 
+        /// <summary>
+        /// 定义正则表达式来匹配以大写字母开头，不允许全部由大写字母组成，不允许存在连续的大写字母，并允许后续字符是小写字母或数字
+        /// </summary>
+        public const string CamelCasePattern = @"^(?![A-Z]+$)(?!.*[A-Z]{2})[A-Z][a-zA-Z0-9]*$";
 
         /// <summary>
         /// 
@@ -16,10 +20,7 @@ namespace GameFrameX.ProtoExport
         /// <returns></returns>
         public static bool IsCamelCase(string str)
         {
-            // 定义一个正则表达式来匹配 Upper Camel Case 命名规则
-            string pattern = @"^[A-Z][a-zA-Z]*$";
-
-            return Regex.IsMatch(str, pattern);
+            return Regex.IsMatch(str, CamelCasePattern);
         }
 
         public static string ConvertType(string type)
