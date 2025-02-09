@@ -5,7 +5,7 @@ namespace GameFrameX.ProtoExport;
 public static partial class MessageHelper
 {
     // 正则表达式匹配enums
-    private const string EnumPattern = @"enum\s+(\w+)\s+\{([^}]*)\}";
+    private const string EnumPattern = @"enum\s+(\w+)\s*\{\s*([^}]*)\s*\}";
 
     // 正则表达式匹配messages
     private const string MessagePattern = @"message\s+(\w+)\s*\{\s*([^}]+)\s*\}";
