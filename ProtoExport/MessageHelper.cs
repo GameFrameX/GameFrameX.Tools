@@ -25,7 +25,7 @@ public static partial class MessageHelper
             throw new Exception("Package not found==>example: package {" + fileName + "};");
         }
 
-        MessageInfoList messageInfo = new MessageInfoList
+        var messageInfo = new MessageInfoList
         {
             OutputPath = Path.Combine(filePath, fileName),
             ModuleName = packageMatch.Groups[1].Value,
@@ -214,9 +214,14 @@ public static partial class MessageHelper
                     if (fieldSplit.Length > 0)
                     {
                         var fieldSplitStrings = fieldSplit[0].Split(Utility.splitChars, StringSplitOptions.RemoveEmptyEntries);
+                        var key = fieldSplitStrings[0].Trim();
+                        if (key.Trim().StartsWith("map") && fieldSplitStrings.Length < 3)
+                        {
+                            throw new Exception($"[{packageName}] 包的 [{messageName}] 消息的 [{key}] 字段名称字典类型中间的[逗号]后面必须跟随空格\n");
+                        }
+
                         if (fieldSplitStrings.Length > 2)
                         {
-                            var key = fieldSplitStrings[0].Trim();
                             if (key.Trim().StartsWith("repeated"))
                             {
                                 field.IsRepeated = true;
