@@ -6,10 +6,15 @@ public static class ProtoBufMessageHandler
 
     public static void Start(LauncherOptions launcherOptions, ModeType modeType)
     {
-        if (!Directory.Exists(launcherOptions.OutputPath))
+        var outputDirectoryInfo = new DirectoryInfo(launcherOptions.OutputPath);
+        if (outputDirectoryInfo.Exists)
         {
-            Directory.CreateDirectory(launcherOptions.OutputPath);
+            outputDirectoryInfo.Delete(true);
         }
+
+        outputDirectoryInfo.Create();
+
+        launcherOptions.OutputPath = outputDirectoryInfo.FullName;
 
         var types = typeof(IProtoGenerateHelper).Assembly.GetTypes();
         foreach (var type in types)
