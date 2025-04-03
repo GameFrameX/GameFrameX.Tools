@@ -139,7 +139,7 @@ public static partial class MessageHelper
                     continue;
                 }
 
-                MessageMember field = new MessageMember();
+                MessageMember field = new MessageMember(true);
                 info.Fields.Add(field);
                 // 解析注释
                 var lineSplit = line.Split("//", StringSplitOptions.RemoveEmptyEntries);
