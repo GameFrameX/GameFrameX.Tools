@@ -162,11 +162,13 @@ public static partial class MessageHelper
                         }
 
                         field.Type = name;
-                        field.Members = int.Parse(fieldSplit[1].Replace(";", "").Trim());
-                        if (!CheckVerifyMember(info.Fields, field.Members))
+                        int member = int.Parse(fieldSplit[1].Replace(";", "").Trim());
+                        if (!CheckVerifyMember(info.Fields, member) && member != 0)
                         {
-                            throw new Exception("[" + packageName + "] 包的 [" + name + "] 消息序列发生重复");
+                            throw new Exception("[" + packageName + "] 包的 [" + name + "] 消息序列[" + member + "]发生重复");
                         }
+
+                        field.Members = member;
                     }
                 }
             }
