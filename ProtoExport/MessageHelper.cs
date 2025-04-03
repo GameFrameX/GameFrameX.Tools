@@ -163,6 +163,10 @@ public static partial class MessageHelper
 
                         field.Type = name;
                         field.Members = int.Parse(fieldSplit[1].Replace(";", "").Trim());
+                        if (!CheckVerifyMember(info.Fields, field.Members))
+                        {
+                            throw new Exception("[" + packageName + "] 包的 [" + name + "] 消息序列发生重复");
+                        }
                     }
                 }
             }
@@ -208,7 +212,13 @@ public static partial class MessageHelper
                     var fieldSplit = lineSplit[0].Split('=', StringSplitOptions.RemoveEmptyEntries);
                     if (fieldSplit.Length > 1)
                     {
-                        field.Members = int.Parse(fieldSplit[1].Replace(";", "").Trim());
+                        var members = int.Parse(fieldSplit[1].Replace(";", "").Trim());
+                        if (!CheckVerifyMember(info.Fields, members))
+                        {
+                            throw new Exception("[" + packageName + "] 包的 [" + messageName + "] 消息序列发生重复");
+                        }
+
+                        field.Members = members;
                     }
 
                     if (fieldSplit.Length > 0)
@@ -270,5 +280,24 @@ public static partial class MessageHelper
                 info.Fields.Add(field);
             }
         }
+    }
+
+    /// <summary>
+    /// 检查tag 是否验证通过
+    /// </summary>
+    /// <param name="info"></param>
+    /// <param name="members"></param>
+    /// <returns></returns>
+    static bool CheckVerifyMember(List<MessageMember> info, int members)
+    {
+        foreach (var messageMember in info)
+        {
+            if (messageMember.Members == members)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
