@@ -169,6 +169,20 @@ namespace GameFrameX.ProtoExport
         private int _members;
 
         /// <summary>
+        /// 是否是枚举
+        /// </summary>
+        public bool IsEnum { get; }
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="isEnum"></param>
+        public MessageMember(bool isEnum = false)
+        {
+            IsEnum = isEnum;
+        }
+
+        /// <summary>
         /// 名称
         /// </summary>
         public string Name { get; set; }
@@ -200,9 +214,9 @@ namespace GameFrameX.ProtoExport
             set
             {
                 _members = value;
-                if (value >= 800 && Name != "ErrorCode")
+                if (!IsEnum && value >= 2047 && Name != "ErrorCode")
                 {
-                    throw new Exception("成员编码不能大于800");
+                    throw new Exception("成员编码不能大于2047");
                 }
             }
         }
