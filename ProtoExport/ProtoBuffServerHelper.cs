@@ -36,6 +36,10 @@ namespace GameFrameX.ProtoExport
                     for (var index = 0; index < operationCodeInfo.Fields.Count; index++)
                     {
                         var operationField = operationCodeInfo.Fields[index];
+                        if (string.IsNullOrEmpty(operationField.Type))
+                        {
+                            continue;
+                        }
                         sb.AppendLine($"        /// <summary>");
                         sb.AppendLine($"        /// {operationField.Description}");
                         sb.AppendLine($"        /// </summary>");

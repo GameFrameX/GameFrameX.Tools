@@ -32,6 +32,10 @@ namespace GameFrameX.ProtoExport
                     sb.AppendLine("\t{");
                     foreach (var operationField in operationCodeInfo.Fields)
                     {
+                        if (string.IsNullOrEmpty(operationField.Type))
+                        {
+                            continue;
+                        }
                         sb.AppendLine($"\t\t/// <summary>");
                         sb.AppendLine($"\t\t/// {operationField.Description}");
                         sb.AppendLine($"\t\t/// </summary>");
