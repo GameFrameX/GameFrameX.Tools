@@ -157,7 +157,7 @@ namespace GameFrameX.ProtoExport
         }
 
 
-        public void Post(List<MessageInfoList> operationCodeInfo, string launcherOptionsOutputPath)
+        public void Post(List<MessageInfoList> operationCodeInfo, LauncherOptions launcherOptions)
         {
             StringBuilder stringBuilder = new StringBuilder();
 
@@ -193,7 +193,7 @@ namespace GameFrameX.ProtoExport
             }
 
             stringBuilder.Append("    }\n}\n");
-            File.WriteAllText(launcherOptionsOutputPath + "/ProtoMessageRegister.ts", stringBuilder.ToString(), Encoding.UTF8);
+            File.WriteAllText(launcherOptions.OutputPath + "/ProtoMessageRegister.ts", stringBuilder.ToString(), Encoding.UTF8);
         }
     }
 }
