@@ -1,4 +1,4 @@
-﻿using CommandLine;
+﻿using GameFrameX.Foundation.Options;
 
 namespace GameFrameX.ProtoExport
 {
@@ -8,7 +8,7 @@ namespace GameFrameX.ProtoExport
         {
             try
             {
-                var launcherOptions = Parser.Default.ParseArguments<LauncherOptions>(args).Value;
+                var launcherOptions = new OptionsBuilder<LauncherOptions>(args).Build();
                 if (launcherOptions == null)
                 {
                     Console.WriteLine("参数错误，解析失败");
