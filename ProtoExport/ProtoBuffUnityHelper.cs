@@ -92,6 +92,40 @@ namespace GameFrameX.ProtoExport
                         sb.AppendLine();
                     }
 
+                    
+                    if (!string.IsNullOrEmpty(operationCodeInfo.ParentClass))
+                    {
+                        sb.AppendLine();
+                        sb.AppendLine("\t\tpublic override void Clear()");
+                        sb.AppendLine("\t\t{");
+                        for (var index = 0; index < operationCodeInfo.Fields.Count; index++)
+                        {
+                            var operationField = operationCodeInfo.Fields[index];
+                            if (!operationField.IsValid)
+                            {
+                                continue;
+                            }
+
+                            if (operationField.IsRepeated)
+                            {
+                                sb.AppendLine($"\t\t\t{operationField.Name}.Clear();");
+                            }
+                            else
+                            {
+                                if (operationField.IsKv)
+                                {
+                                    sb.AppendLine($"\t\t\t{operationField.Name}.Clear();");
+                                }
+                                else
+                                {
+                                    sb.AppendLine($"\t\t\t{operationField.Name} = default;");
+                                }
+                            }
+                        }
+
+                        sb.AppendLine("\t\t}");
+                    }
+                    
                     sb.AppendLine("\t}");
                     sb.AppendLine();
                 }
