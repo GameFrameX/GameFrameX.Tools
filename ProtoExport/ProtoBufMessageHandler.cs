@@ -2,7 +2,7 @@
 
 public static class ProtoBufMessageHandler
 {
-    private static IProtoGenerateHelper ProtoGenerateHelper;
+    private static IProtoGenerateHelper _protoGenerateHelper;
 
     public static void Start(LauncherOptions launcherOptions, ModeType modeType)
     {
@@ -22,7 +22,7 @@ public static class ProtoBufMessageHandler
             var attrs = type.GetCustomAttributes(typeof(ModeAttribute), true);
             if (attrs?.Length > 0 && (attrs[0] is ModeAttribute modeAttribute) && modeAttribute.Mode == modeType)
             {
-                ProtoGenerateHelper = (IProtoGenerateHelper)Activator.CreateInstance(type);
+                _protoGenerateHelper = (IProtoGenerateHelper)Activator.CreateInstance(type);
                 break;
             }
         }
@@ -38,16 +38,16 @@ public static class ProtoBufMessageHandler
             {
                 case ModeType.Server:
                 case ModeType.Unity:
-                    ProtoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
+                    _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
                     break;
                 case ModeType.TypeScript:
-                    ProtoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, Path.GetFileNameWithoutExtension(file));
+                    _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, Path.GetFileNameWithoutExtension(file));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        ProtoGenerateHelper?.Post(messageInfoLists, launcherOptions.OutputPath);
+        _protoGenerateHelper?.Post(messageInfoLists, launcherOptions);
     }
 }
