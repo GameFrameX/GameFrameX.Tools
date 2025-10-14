@@ -160,6 +160,7 @@ namespace GameFrameX.ProtoExport
         public void Post(List<MessageInfoList> operationCodeInfo, LauncherOptions launcherOptions)
         {
             StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AddTemplateHeader();
 
             foreach (var messageInfoList in operationCodeInfo)
             {

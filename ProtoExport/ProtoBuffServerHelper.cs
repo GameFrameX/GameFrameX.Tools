@@ -11,6 +11,7 @@ namespace GameFrameX.ProtoExport
         public void Run(MessageInfoList messageInfoList, string outputPath, string namespaceName = "Hotfix")
         {
             StringBuilder sb = new StringBuilder();
+            sb.AddTemplateHeader();
 
             sb.AppendLine("using System;");
             sb.AppendLine("using ProtoBuf;");
@@ -40,6 +41,7 @@ namespace GameFrameX.ProtoExport
                         {
                             continue;
                         }
+
                         sb.AppendLine($"        /// <summary>");
                         sb.AppendLine($"        /// {operationField.Description}");
                         sb.AppendLine($"        /// </summary>");

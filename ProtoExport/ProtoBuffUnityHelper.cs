@@ -11,6 +11,7 @@ namespace GameFrameX.ProtoExport
         public void Run(MessageInfoList messageInfoList, string outputPath, string namespaceName = "Hotfix")
         {
             StringBuilder sb = new StringBuilder();
+            sb.AddTemplateHeader();
 
             sb.AppendLine("using System;");
             sb.AppendLine("using ProtoBuf;");
@@ -36,6 +37,7 @@ namespace GameFrameX.ProtoExport
                         {
                             continue;
                         }
+
                         sb.AppendLine($"\t\t/// <summary>");
                         sb.AppendLine($"\t\t/// {operationField.Description}");
                         sb.AppendLine($"\t\t/// </summary>");
@@ -92,7 +94,7 @@ namespace GameFrameX.ProtoExport
                         sb.AppendLine();
                     }
 
-                    
+
                     if (!string.IsNullOrEmpty(operationCodeInfo.ParentClass))
                     {
                         sb.AppendLine();
@@ -125,7 +127,7 @@ namespace GameFrameX.ProtoExport
 
                         sb.AppendLine("\t\t}");
                     }
-                    
+
                     sb.AppendLine("\t}");
                     sb.AppendLine();
                 }
@@ -139,7 +141,6 @@ namespace GameFrameX.ProtoExport
 
         public void Post(List<MessageInfoList> operationCodeInfo, LauncherOptions launcherOptions)
         {
-            
         }
     }
 }
