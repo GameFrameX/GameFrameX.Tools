@@ -28,12 +28,12 @@ namespace GameFrameX.ProtoExport
             {
                 if (operationCodeInfo.IsEnum)
                 {
-                    sb.AppendLine($"    /// <summary>");
-                    sb.AppendLine($"    /// {operationCodeInfo.Description}");
-                    sb.AppendLine($"    /// </summary>");
-                    sb.AppendLine($"    [System.ComponentModel.Description(\"{operationCodeInfo.Description}\")]");
-                    sb.AppendLine($"    public enum {operationCodeInfo.Name}");
-                    sb.AppendLine("    {");
+                    sb.AppendLine($"\t/// <summary>");
+                    sb.AppendLine($"\t/// {operationCodeInfo.Description}");
+                    sb.AppendLine($"\t/// </summary>");
+                    sb.AppendLine($"\t[System.ComponentModel.Description(\"{operationCodeInfo.Description}\")]");
+                    sb.AppendLine($"\tpublic enum {operationCodeInfo.Name}");
+                    sb.AppendLine("\t{");
                     for (var index = 0; index < operationCodeInfo.Fields.Count; index++)
                     {
                         var operationField = operationCodeInfo.Fields[index];
@@ -42,38 +42,38 @@ namespace GameFrameX.ProtoExport
                             continue;
                         }
 
-                        sb.AppendLine($"        /// <summary>");
-                        sb.AppendLine($"        /// {operationField.Description}");
-                        sb.AppendLine($"        /// </summary>");
-                        sb.AppendLine($"        [System.ComponentModel.Description(\"{operationField.Description}\")]");
-                        sb.AppendLine($"        {operationField.Type} = {operationField.Members},");
+                        sb.AppendLine($"\t\t/// <summary>");
+                        sb.AppendLine($"\t\t/// {operationField.Description}");
+                        sb.AppendLine($"\t\t/// </summary>");
+                        sb.AppendLine($"\t\t[System.ComponentModel.Description(\"{operationField.Description}\")]");
+                        sb.AppendLine($"\t\t{operationField.Type} = {operationField.Members},");
                         if (index < operationCodeInfo.Fields.Count - 1)
                         {
                             sb.AppendLine();
                         }
                     }
 
-                    sb.AppendLine("    }");
+                    sb.AppendLine("\t}");
                     sb.AppendLine();
                 }
                 else
                 {
-                    sb.AppendLine($"    /// <summary>");
-                    sb.AppendLine($"    /// {operationCodeInfo.Description}");
-                    sb.AppendLine($"    /// </summary>");
-                    sb.AppendLine($"    [ProtoContract]");
-                    sb.AppendLine($"    [System.ComponentModel.Description(\"{operationCodeInfo.Description}\")]");
+                    sb.AppendLine($"\t/// <summary>");
+                    sb.AppendLine($"\t/// {operationCodeInfo.Description}");
+                    sb.AppendLine($"\t/// </summary>");
+                    sb.AppendLine($"\t[ProtoContract]");
+                    sb.AppendLine($"\t[System.ComponentModel.Description(\"{operationCodeInfo.Description}\")]");
                     if (string.IsNullOrEmpty(operationCodeInfo.ParentClass))
                     {
-                        sb.AppendLine($"    public sealed class {operationCodeInfo.Name}");
+                        sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name}");
                     }
                     else
                     {
-                        sb.AppendLine($"    public sealed class {operationCodeInfo.Name} : MessageObject, {operationCodeInfo.ParentClass}");
                         sb.AppendLine($"\t[MessageTypeHandler((({messageInfoList.Module}) << 16) + {operationCodeInfo.Opcode})]");
+                        sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name} : MessageObject, {operationCodeInfo.ParentClass}");
                     }
 
-                    sb.AppendLine("    {");
+                    sb.AppendLine("\t{");
                     for (var index = 0; index < operationCodeInfo.Fields.Count; index++)
                     {
                         var operationField = operationCodeInfo.Fields[index];
@@ -82,14 +82,14 @@ namespace GameFrameX.ProtoExport
                             continue;
                         }
 
-                        sb.AppendLine($"        /// <summary>");
-                        sb.AppendLine($"        /// {operationField.Description}");
-                        sb.AppendLine($"        /// </summary>");
-                        sb.AppendLine($"        [ProtoMember({operationField.Members})]");
-                        sb.AppendLine($"        [System.ComponentModel.Description(\"{operationField.Description}\")]");
+                        sb.AppendLine($"\t\t/// <summary>");
+                        sb.AppendLine($"\t\t/// {operationField.Description}");
+                        sb.AppendLine($"\t\t/// </summary>");
+                        sb.AppendLine($"\t\t[ProtoMember({operationField.Members})]");
+                        sb.AppendLine($"\t\t[System.ComponentModel.Description(\"{operationField.Description}\")]");
                         if (operationField.IsRepeated)
                         {
-                            sb.AppendLine($"        public List<{operationField.Type}> {operationField.Name} {{ get; set; }} = new List<{operationField.Type}>();");
+                            sb.AppendLine($"\t\tpublic List<{operationField.Type}> {operationField.Name} {{ get; set; }} = new List<{operationField.Type}>();");
                         }
                         else
                         {
@@ -97,10 +97,10 @@ namespace GameFrameX.ProtoExport
                             if (operationField.IsKv)
                             {
                                 defaultValue = $" = new {operationField.Type}();";
-                                sb.AppendLine($"        [ProtoMap(DisableMap = true)]");
+                                sb.AppendLine($"\t\t[ProtoMap(DisableMap = true)]");
                             }
 
-                            sb.AppendLine($"        public {operationField.Type} {operationField.Name} {{ get; set; }}{defaultValue}");
+                            sb.AppendLine($"\t\tpublic {operationField.Type} {operationField.Name} {{ get; set; }}{defaultValue}");
                         }
 
                         if (index < operationCodeInfo.Fields.Count - 1)
