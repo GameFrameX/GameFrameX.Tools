@@ -69,8 +69,8 @@ namespace GameFrameX.ProtoExport
                     }
                     else
                     {
-                        sb.AppendLine($"    [MessageTypeHandler({(messageInfoList.Module << 16) + operationCodeInfo.Opcode})]");
                         sb.AppendLine($"    public sealed class {operationCodeInfo.Name} : MessageObject, {operationCodeInfo.ParentClass}");
+                        sb.AppendLine($"\t[MessageTypeHandler((({messageInfoList.Module}) << 16) + {operationCodeInfo.Opcode})]");
                     }
 
                     sb.AppendLine("    {");
