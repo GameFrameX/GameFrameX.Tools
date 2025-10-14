@@ -67,5 +67,6 @@ public static class ProtoTemplateUtility
         stringBuilder.AppendLine("//  官方文档：https://gameframex.doc.alianblank.com/");
         stringBuilder.AppendLine("//  Official Documentation: https://gameframex.doc.alianblank.com/");
         stringBuilder.AppendLine("// ==========================================================================================");
+        stringBuilder.AppendLine();
     }
 }
