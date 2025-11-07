@@ -32,16 +32,35 @@ public static class ProtoBufMessageHandler
         var messageInfoLists = new List<MessageInfoList>(files.Length);
         foreach (var file in files)
         {
-            var operationCodeInfo = MessageHelper.Parse(File.ReadAllText(file), Path.GetFileNameWithoutExtension(file), launcherOptions.OutputPath, launcherOptions.IsGenerateErrorCode);
+            var fileName = Path.GetFileNameWithoutExtension(file);
+            var operationCodeInfo = MessageHelper.Parse(File.ReadAllText(file), fileName, launcherOptions.OutputPath, launcherOptions.IsGenerateErrorCode);
             messageInfoLists.Add(operationCodeInfo);
             switch (modeType)
             {
                 case ModeType.Server:
-                case ModeType.Unity:
+                {
                     _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
+                }
+                    break;
+                case ModeType.Unity:
+                {
+                    if (fileName.EndsWith("-s") || fileName.EndsWith("_s"))
+                    {
+                        continue;
+                    }
+
+                    _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
+                }
                     break;
                 case ModeType.TypeScript:
+                {
+                    if (fileName.EndsWith("-s") || fileName.EndsWith("_s"))
+                    {
+                        continue;
+                    }
+
                     _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, Path.GetFileNameWithoutExtension(file));
+                }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
