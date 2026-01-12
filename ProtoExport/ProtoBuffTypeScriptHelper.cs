@@ -109,7 +109,7 @@ namespace GameFrameX.ProtoExport
             }
 
             sb.Append("}\n");
-
+            Console.WriteLine($"Generate File:{messageInfoList.OutputPath + ".cs"}");
             File.WriteAllText(messageInfoList.OutputPath + ".ts", sb.ToString(), Encoding.UTF8);
         }
 
