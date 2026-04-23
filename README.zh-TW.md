@@ -22,14 +22,14 @@
 
 # ProtoExport 工具
 
-這是一個用於將Proto協議文件轉換為 `Server/Unity/TypeScript` 程式碼的工具。
+這是一個用於將Proto協議文件轉換為 `Server/Unity/TypeScript/Godot` 程式碼的工具。
 
 # 參數解析
 
 以下是此工具命令列參數的詳細說明：
 
 `--mode`
-此參數用於指定執行模式。有效值包括 `Server`, `Unity`, 或 `TypeScript` 中的任何一個。
+此參數用於指定執行模式。有效值包括 `Server`, `Unity`, `TypeScript`, 或 `Godot` 中的任何一個。
 
 `--inputpath`
 此參數用於指定.proto協議檔案的路徑。程式將掃描該路徑下所有以.proto結尾的檔案。
@@ -38,7 +38,7 @@
 此參數用於指定輸出檔案的儲存路徑。
 
 `--namespaceName`
-此參數用於指定命名空間。在TypeScript模式中此參數無效。如果不想設定命名空間，此參數可以傳空值。
+此參數用於指定命名空間。在TypeScript模式中此參數無效。在Godot模式中，生成的程式碼始終使用 `GameFrameX.Network.Runtime` 命名空間。如果不想設定命名空間，此參數可以傳空值。
 
 ## 命令列範例
 
@@ -56,3 +56,18 @@
 - `--namespaceName GameFrameX.Proto.Proto` 表示命名空間設定為 `GameFrameX.Proto.Proto`。
 
 更改命令列參數，可以根據實際需求轉換合適的程式碼。
+
+### Godot 模式範例
+
+下面的命令範例展示了如何將Proto協議文件轉換為Godot C#程式碼：
+
+```
+--mode godot --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Godot/Proto --namespaceName Hotfix.Proto
+```
+
+在上述命令範例中：
+
+- `--mode godot` 表示設定執行模式為 Godot。
+- `--inputpath ./../../../../../Protobuf` 表示.proto協議檔案的路徑為 `./../../../../../Protobuf`。
+- `--outputpath ./../../../../../Godot/Proto` 表示輸出檔案的儲存路徑為 `./../../../../../Godot/Proto`。
+- `--namespaceName Hotfix.Proto` 表示命名空間設定為 `Hotfix.Proto`。服務端專屬的proto檔案（以 `-s` 或 `_s` 結尾）會被自動跳過。

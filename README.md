@@ -22,14 +22,14 @@
 
 # ProtoExport Tool
 
-A tool for converting Proto protocol files into `Server/Unity/TypeScript` code.
+A tool for converting Proto protocol files into `Server/Unity/TypeScript/Godot` code.
 
 # Parameter Reference
 
 Below is a detailed description of the command-line parameters for this tool.
 
 `--mode`
-This parameter specifies the run mode. Valid values include `Server`, `Unity`, or `TypeScript`.
+This parameter specifies the run mode. Valid values include `Server`, `Unity`, `TypeScript`, or `Godot`.
 
 `--inputpath`
 This parameter specifies the path to the .proto protocol files. The program will scan all files ending with .proto under the specified path.
@@ -38,7 +38,7 @@ This parameter specifies the path to the .proto protocol files. The program will
 This parameter specifies the output path for the generated files.
 
 `--namespaceName`
-This parameter specifies the namespace. This parameter has no effect in TypeScript mode. If you do not want to set a namespace, pass an empty value.
+This parameter specifies the namespace. This parameter has no effect in TypeScript mode. In Godot mode, the generated code always uses `GameFrameX.Network.Runtime` namespace. If you do not want to set a namespace, pass an empty value.
 
 ## Command Line Example
 
@@ -56,3 +56,18 @@ In the above example:
 - `--namespaceName GameFrameX.Proto.Proto` sets the namespace to `GameFrameX.Proto.Proto`.
 
 You can adjust the command-line parameters to generate the appropriate code for your needs.
+
+### Godot Mode Example
+
+The following command example demonstrates how to convert Proto protocol files into Godot C# code:
+
+```
+--mode godot --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Godot/Proto --namespaceName Hotfix.Proto
+```
+
+In the above example:
+
+- `--mode godot` sets the run mode to Godot.
+- `--inputpath ./../../../../../Protobuf` sets the .proto protocol file path to `./../../../../../Protobuf`.
+- `--outputpath ./../../../../../Godot/Proto` sets the output file path to `./../../../../../Godot/Proto`.
+- `--namespaceName Hotfix.Proto` sets the namespace to `Hotfix.Proto`. Server-only proto files (ending with `-s` or `_s`) are automatically skipped.
