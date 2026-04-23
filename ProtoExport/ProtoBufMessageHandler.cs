@@ -35,41 +35,24 @@ public static class ProtoBufMessageHandler
             var fileName = Path.GetFileNameWithoutExtension(file);
             var operationCodeInfo = MessageHelper.Parse(File.ReadAllText(file), fileName, launcherOptions.OutputPath, launcherOptions.IsGenerateErrorCode);
             messageInfoLists.Add(operationCodeInfo);
+
+            if (modeType != ModeType.Server && (fileName.EndsWith("-s") || fileName.EndsWith("_s")))
+            {
+                continue;
+            }
+
             switch (modeType)
             {
                 case ModeType.Server:
-                {
-                    _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
-                }
-                    break;
                 case ModeType.Unity:
+                case ModeType.Godot:
                 {
-                    if (fileName.EndsWith("-s") || fileName.EndsWith("_s"))
-                    {
-                        continue;
-                    }
-
                     _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
                 }
                     break;
                 case ModeType.TypeScript:
                 {
-                    if (fileName.EndsWith("-s") || fileName.EndsWith("_s"))
-                    {
-                        continue;
-                    }
-
                     _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, Path.GetFileNameWithoutExtension(file));
-                }
-                    break;
-                case ModeType.Godot:
-                {
-                    if (fileName.EndsWith("-s") || fileName.EndsWith("_s"))
-                    {
-                        continue;
-                    }
-
-                    _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
                 }
                     break;
                 default:
