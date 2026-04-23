@@ -62,6 +62,16 @@ public static class ProtoBufMessageHandler
                     _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, Path.GetFileNameWithoutExtension(file));
                 }
                     break;
+                case ModeType.Godot:
+                {
+                    if (fileName.EndsWith("-s") || fileName.EndsWith("_s"))
+                    {
+                        continue;
+                    }
+
+                    _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
+                }
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

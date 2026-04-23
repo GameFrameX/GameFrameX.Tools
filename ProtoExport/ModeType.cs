@@ -15,5 +15,10 @@ public enum ModeType
     /// <summary>
     /// TS.
     /// </summary>
-    TypeScript
+    TypeScript,
+
+    /// <summary>
+    /// Godot
+    /// </summary>
+    Godot
 }
