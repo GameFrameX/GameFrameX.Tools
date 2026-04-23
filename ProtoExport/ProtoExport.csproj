@@ -11,6 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GameFrameX.Foundation.Options" Version="1.6.0" />
+    <PackageReference Include="GameFrameX.Foundation.Options" Version="2.2.10" />
   </ItemGroup>	
 </Project>

@@ -25,7 +25,7 @@ public sealed class LauncherOptions
     /// <summary>
     /// 命名空间
     /// </summary>
-    [Option("namespaceName", Required = true, Description = "命名空间")]
+    [Option("namespaceName", Required = false, DefaultValue = "", Description = "命名空间")]
     public string NamespaceName { get; set; }
 
     /// <summary>
