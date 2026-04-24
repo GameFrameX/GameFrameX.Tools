@@ -50,6 +50,80 @@ docker run --rm \
   --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
+# Proto 协议规范
+
+本工具对 `.proto` 文件格式有特定要求，请遵循以下规则以确保正确生成代码。
+
+## 文件格式要求
+
+```protobuf
+syntax = "proto3";     // 必须声明：仅支持 proto3
+package Basic;
+option module = 10;    // 必须定义：模块 ID
+
+// 请求心跳
+message ReqHeartBeat
+{
+    int64 Timestamp = 1; // 时间戳
+}
+```
+
+## 消息命名规则
+
+- **请求消息**：必须以 `Req` 开头（如 `ReqLogin`、`ReqHeartBeat`）
+- **响应消息**：必须以 `Resp` 开头（如 `RespLogin`）
+- **通知消息**：必须以 `Notify` 开头（如 `NotifyBagInfoChanged`）
+- 消息名称、字段名称、枚举名称和枚举值必须使用 **UpperCamelCase**（大驼峰）命名
+
+## 模块 ID 规则
+
+通过 `option module = <id>;` 定义模块 ID：
+
+| ID 范围 | 用途 |
+|---------|------|
+| `0` ~ `32767` | 客户端-服务端通讯 |
+| `-32768` ~ `-1` | 服务端-服务端通讯 |
+
+## 字段编号规则
+
+- 消息字段编号必须**小于 800**（大于等于 800 为系统预留，会导致解析异常）
+- `ErrorCode` 是响应消息中的保留字段名，请勿手动定义。`Resp` 消息会自动生成 `ErrorCode` 字段
+
+## 限制事项
+
+- **不支持嵌套类型**：不允许在 message 内部嵌套 `message`、`enum` 或任何自定义类型
+- **不支持 RPC 定义**：proto 文件中不允许使用 RPC 服务定义
+- **仅支持 proto3**：必须声明 `syntax = "proto3";`，不支持 proto2
+
+## 注释规范
+
+- 在 message 和 enum 定义**上方**添加注释：
+
+```protobuf
+// 请求心跳
+message ReqHeartBeat
+{
+    int64 Timestamp = 1;
+}
+```
+
+- 在字段行**末尾**添加行内注释：
+
+```protobuf
+// 玩家信息
+message PlayerInfo
+{
+    int64 Id = 1;         // 角色ID
+    string Name = 2;      // 角色名
+    uint32 Level = 3;     // 角色等级
+    int32 State = 4;      // 角色状态
+}
+```
+
+完整的协议规范请参考 [通讯协议规范](https://gameframex.doc.alianblank.com/zh-CN/protobuf/require.html) 和 [注意事项](https://gameframex.doc.alianblank.com/zh-CN/protobuf/note.html) 文档。
+
+---
+
 # 参数解析
 
 以下是此工具命令行参数的详细说明：
