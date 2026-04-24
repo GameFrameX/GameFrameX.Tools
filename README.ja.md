@@ -50,6 +50,80 @@ docker run --rm \
   --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
+# Proto プロトコル仕様
+
+本ツールは `.proto` ファイルの書式について特定の要件があります。正しくコードを生成するために、以下のルールに従ってください。
+
+## ファイルフォーマット要件
+
+```protobuf
+syntax = "proto3";     // 必須：proto3 のみサポート
+package Basic;
+option module = 10;    // 必須：モジュール ID の定義
+
+// ハートビートリクエスト
+message ReqHeartBeat
+{
+    int64 Timestamp = 1; // タイムスタンプ
+}
+```
+
+## メッセージ命名規則
+
+- **リクエストメッセージ**：`Req` で始まる必要があります（例：`ReqLogin`、`ReqHeartBeat`）
+- **レスポンスメッセージ**：`Resp` で始まる必要があります（例：`RespLogin`）
+- **通知メッセージ**：`Notify` で始まる必要があります（例：`NotifyBagInfoChanged`）
+- メッセージ名、フィールド名、enum名、enum値はすべて **UpperCamelCase**（アッパーキャメルケース）を使用
+
+## モジュール ID ルール
+
+`option module = <id>;` でモジュール ID を定義します：
+
+| ID 範囲 | 用途 |
+|---------|------|
+| `0` ~ `32767` | クライアント-サーバー間通信 |
+| `-32768` ~ `-1` | サーバー-サーバー間通信 |
+
+## フィールド番号ルール
+
+- メッセージのフィールド番号は **800 未満**である必要があります（800 以上はシステム予約であり、パースエラーの原因になります）
+- `ErrorCode` はレスポンスメッセージの予約フィールド名です。手動で定義しないでください。`Resp` メッセージには自動的に `ErrorCode` フィールドが生成されます
+
+## 制限事項
+
+- **ネスト型非対応**：message 内部での `message`、`enum`、その他カスタム型のネストはサポートされていません
+- **RPC 定義非対応**：proto ファイル内での RPC サービス定義はサポートされていません
+- **proto3 のみ対応**：`syntax = "proto3";` の宣言が必須です。proto2 はサポートされていません
+
+## コメント規約
+
+- message と enum 定義の**上**にコメントを追加：
+
+```protobuf
+// ハートビートリクエスト
+message ReqHeartBeat
+{
+    int64 Timestamp = 1;
+}
+```
+
+- フィールド行の**末尾**にインラインコメントを追加：
+
+```protobuf
+// プレイヤー情報
+message PlayerInfo
+{
+    int64 Id = 1;         // プレイヤーID
+    string Name = 2;      // プレイヤー名
+    uint32 Level = 3;     // プレイヤーレベル
+    int32 State = 4;      // プレイヤー状態
+}
+```
+
+完全なプロトコル仕様については [通信プロトコル仕様](https://gameframex.doc.alianblank.com/zh-CN/protobuf/require.html) と [注意事項](https://gameframex.doc.alianblank.com/zh-CN/protobuf/note.html) のドキュメントを参照してください。
+
+---
+
 # パラメータ解説
 
 このツールのコマンドラインパラメータの詳細説明は以下の通りです。
