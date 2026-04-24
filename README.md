@@ -50,6 +50,80 @@ docker run --rm \
   --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
+# Proto Protocol Specification
+
+This tool has specific requirements for `.proto` file formatting. Please follow the rules below to ensure correct code generation.
+
+## File Format Requirements
+
+```protobuf
+syntax = "proto3";     // Required: only proto3 is supported
+package Basic;
+option module = 10;    // Required: module ID must be defined
+
+// Request heartbeat
+message ReqHeartBeat
+{
+    int64 Timestamp = 1; // Timestamp
+}
+```
+
+## Message Naming Rules
+
+- **Request messages**: Must start with `Req` (e.g., `ReqLogin`, `ReqHeartBeat`)
+- **Response messages**: Must start with `Resp` (e.g., `RespLogin`)
+- **Notification messages**: Must start with `Notify` (e.g., `NotifyBagInfoChanged`)
+- All message names, field names, enum names, and enum values must use **UpperCamelCase**
+
+## Module ID Rules
+
+Module ID is defined via `option module = <id>;`:
+
+| ID Range | Purpose |
+|----------|---------|
+| `0` ~ `32767` | Client-Server communication |
+| `-32768` ~ `-1` | Server-Server communication |
+
+## Field Numbering Rules
+
+- Message field numbers must be **less than 800** (values >= 800 are system-reserved and will cause parse errors)
+- `ErrorCode` is a reserved field name in response messages — do not define it manually. `Resp` messages automatically generate an `ErrorCode` field
+
+## Restrictions
+
+- **No nested types**: Nesting of `message`, `enum`, or any custom type inside another message is not supported
+- **No RPC definitions**: RPC service definitions in proto files are not supported
+- **Only proto3**: `syntax = "proto3";` is required; proto2 is not supported
+
+## Comment Standards
+
+- Add a comment line **above** message and enum definitions:
+
+```protobuf
+// Request heartbeat
+message ReqHeartBeat
+{
+    int64 Timestamp = 1;
+}
+```
+
+- Add **inline** comments at the end of field lines:
+
+```protobuf
+// Player information
+message PlayerInfo
+{
+    int64 Id = 1;         // Player ID
+    string Name = 2;      // Player name
+    uint32 Level = 3;     // Player level
+    int32 State = 4;      // Player state
+}
+```
+
+For the complete protocol specification, see the [Protocol Requirements](https://gameframex.doc.alianblank.com/en-US/protobuf/require.html) and [Notes](https://gameframex.doc.alianblank.com/en-US/protobuf/note.html) documentation.
+
+---
+
 # Parameter Reference
 
 Below is a detailed description of the command-line parameters for this tool.
