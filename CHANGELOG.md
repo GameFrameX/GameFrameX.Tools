@@ -1,4 +1,7 @@
-## [0.1.0] - 2026-04-24
+## [0.1.1] - 2026-04-24
+
+* 升级目标框架和 Docker 镜像到 .NET 10
+* 升级 .NET SDK 版本到 10.0## [0.1.0] - 2026-04-24
 
 * 替换 semantic-release 为 git-cliff 发布流程
 * 添加 workflow_dispatch 手动触发
