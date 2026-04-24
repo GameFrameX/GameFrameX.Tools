@@ -50,6 +50,80 @@ docker run --rm \
   --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
+# Proto 프로토콜 사양
+
+이 도구는 `.proto` 파일 형식에 특정 요구사항이 있습니다. 올바른 코드 생성을 위해 다음 규칙을 따르세요.
+
+## 파일 형식 요구사항
+
+```protobuf
+syntax = "proto3";     // 필수: proto3만 지원
+package Basic;
+option module = 10;    // 필수: 모듈 ID 정의
+
+// 하트비트 요청
+message ReqHeartBeat
+{
+    int64 Timestamp = 1; // 타임스탬프
+}
+```
+
+## 메시지 명명 규칙
+
+- **요청 메시지**: `Req`로 시작해야 합니다 (예: `ReqLogin`, `ReqHeartBeat`)
+- **응답 메시지**: `Resp`로 시작해야 합니다 (예: `RespLogin`)
+- **알림 메시지**: `Notify`로 시작해야 합니다 (예: `NotifyBagInfoChanged`)
+- 메시지 이름, 필드 이름, enum 이름, enum 값은 모두 **UpperCamelCase**를 사용해야 합니다
+
+## 모듈 ID 규칙
+
+`option module = <id>;`로 모듈 ID를 정의합니다:
+
+| ID 범위 | 용도 |
+|---------|------|
+| `0` ~ `32767` | 클라이언트-서버 통신 |
+| `-32768` ~ `-1` | 서버-서버 통신 |
+
+## 필드 번호 규칙
+
+- 메시지 필드 번호는 **800 미만**이어야 합니다 (800 이상은 시스템 예약이며 파싱 오류를 발생시킵니다)
+- `ErrorCode`는 응답 메시지의 예약된 필드 이름입니다. 수동으로 정의하지 마세요. `Resp` 메시지는 자동으로 `ErrorCode` 필드를 생성합니다
+
+## 제한 사항
+
+- **중첩 타입 미지원**: message 내부에 `message`, `enum` 또는 다른 커스텀 타입을 중첩하는 것은 지원되지 않습니다
+- **RPC 정의 미지원**: proto 파일 내의 RPC 서비스 정의는 지원되지 않습니다
+- **proto3만 지원**: `syntax = "proto3";` 선언이 필수입니다. proto2는 지원되지 않습니다
+
+## 주석 규칙
+
+- message 및 enum 정의 **위에** 주석을 추가:
+
+```protobuf
+// 하트비트 요청
+message ReqHeartBeat
+{
+    int64 Timestamp = 1;
+}
+```
+
+- 필드 줄 **끝에** 인라인 주석을 추가:
+
+```protobuf
+// 플레이어 정보
+message PlayerInfo
+{
+    int64 Id = 1;         // 플레이어 ID
+    string Name = 2;      // 플레이어 이름
+    uint32 Level = 3;     // 플레이어 레벨
+    int32 State = 4;      // 플레이어 상태
+}
+```
+
+전체 프로토콜 사양은 [통신 프로토콜 사양](https://gameframex.doc.alianblank.com/zh-CN/protobuf/require.html) 및 [주의사항](https://gameframex.doc.alianblank.com/zh-CN/protobuf/note.html) 문서를 참조하세요.
+
+---
+
 # 매개변수 설명
 
 이 도구의 명령줄 매개변수에 대한 자세한 설명은 다음과 같습니다.
