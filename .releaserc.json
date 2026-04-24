@@ -1,6 +1,6 @@
 {
   "branches": ["main"],
-  "repositoryUrl": "https://github.com/AlianBlank/GameFrameX.Tools.git",
+  "repositoryUrl": "https://github.com/GameFrameX/GameFrameX.Tools.git",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
