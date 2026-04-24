@@ -49,6 +49,10 @@ jobs:
             echo "need_release=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Lowercase repository name
+        id: repo
+        run: echo "lowercase=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Generate CHANGELOG
         if: steps.check.outputs.need_release == 'true'
         uses: orhun/git-cliff-action@v4
@@ -99,8 +103,8 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_ORGANIZATION }}/gameframex-tools:${{ steps.version.outputs.version }}
             ${{ secrets.DOCKERHUB_ORGANIZATION }}/gameframex-tools:latest
-            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ steps.repo.outputs.lowercase }}:${{ steps.version.outputs.version }}
+            ghcr.io/${{ steps.repo.outputs.lowercase }}:latest
 
       - name: Push changes
         if: steps.check.outputs.need_release == 'true'
