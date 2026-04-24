@@ -66,34 +66,121 @@ docker run --rm \
 `--namespaceName`
 名前空間を指定します。TypeScript モードではこのパラメータは無効です。Godot モードでは、生成されたコードは常に `GameFrameX.Network.Runtime` 名前空間を使用します。名前空間を設定しない場合は空の値を渡してください。
 
-## コマンドライン例
+## モード詳細と例
 
-以下のコマンド例は、Proto プロトコルファイルを Server コードに変換する方法を示しています：
+| モード | 出力言語 | 名前空間の動作 | サーバー専用 Proto |
+|--------|---------|--------------|-------------------|
+| `Server` | C# | `--namespaceName` の値を使用 | 含む |
+| `Unity` | C# | `--namespaceName` の値を使用 | スキップ（`-s` または `_s` で終わるファイル） |
+| `TypeScript` | TypeScript (.ts) | `--namespaceName` は無効 | スキップ（`-s` または `_s` で終わるファイル） |
+| `Godot` | C# | 常に `GameFrameX.Network.Runtime` を使用 | スキップ（`-s` または `_s` で終わるファイル） |
 
-```
---mode server --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Server/GameFrameX.Proto/Proto --namespaceName GameFrameX.Proto.Proto
-```
+### Server モード
 
-上記のコマンド例では：
+`[System.ComponentModel.Description]` 属性付きの C# コードを生成します。サーバー専用 proto ファイルを含みます。
 
-- `--mode server` は実行モードを Server に設定します。
-- `--inputpath ./../../../../../Protobuf` は .proto プロトコルファイルのパスを `./../../../../../Protobuf` に設定します。
-- `--outputpath ./../../../../../Server/GameFrameX.Proto/Proto` は出力ファイルのパスを `./../../../../../Server/GameFrameX.Proto/Proto` に設定します。
-- `--namespaceName GameFrameX.Proto.Proto` は名前空間を `GameFrameX.Proto.Proto` に設定します。
+**ローカル実行：**
 
-コマンドラインパラメータを変更することで、実際のニーズに合わせたコードを生成できます。
-
-### Godot モードの例
-
-以下のコマンド例は、Proto プロトコルファイルを Godot C# コードに変換する方法を示しています：
-
-```
---mode godot --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Godot/Proto --namespaceName Hotfix.Proto
+```bash
+dotnet run --project ProtoExport -- \
+  --mode server \
+  --inputpath ./Protobuf \
+  --outputpath ./Server/GameFrameX.Proto/Proto \
+  --namespaceName GameFrameX.Proto.Proto
 ```
 
-上記のコマンド例では：
+**Docker 実行：**
 
-- `--mode godot` は実行モードを Godot に設定します。
-- `--inputpath ./../../../../../Protobuf` は .proto プロトコルファイルのパスを `./../../../../../Protobuf` に設定します。
-- `--outputpath ./../../../../../Godot/Proto` は出力ファイルのパスを `./../../../../../Godot/Proto` に設定します。
-- `--namespaceName Hotfix.Proto` は名前空間を `Hotfix.Proto` に設定します。サーバー専用の proto ファイル（`-s` または `_s` で終わるもの）は自動的にスキップされます。
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Server/GameFrameX.Proto/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```
+
+### Unity モード
+
+`GameFrameX.Network.Runtime` 名前空間を使用する C# コードを生成します（`[Description]` 属性なし）。サーバー専用 proto ファイルは自動的にスキップされます。
+
+**ローカル実行：**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode unity \
+  --inputpath ./Protobuf \
+  --outputpath ./Unity/Assets/Hotfix/Proto \
+  --namespaceName Hotfix.Proto
+```
+
+**Docker 実行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Unity/Assets/Hotfix/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode unity --inputpath /protos --outputpath /output --namespaceName Hotfix.Proto
+```
+
+### TypeScript モード
+
+`export namespace`、`export class`、`export enum` を含む `.ts` ファイルと、集約ファイル `ProtoMessageRegister.ts` を生成します。このモードでは `--namespaceName` パラメータは無効です。サーバー専用 proto ファイルは自動的にスキップされます。
+
+**ローカル実行：**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode typescript \
+  --inputpath ./Protobuf \
+  --outputpath ./Laya/src/gameframex/protobuf
+```
+
+**Docker 実行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Laya/src/gameframex/protobuf:/output \
+  gameframex/gameframex-tools:latest \
+  --mode typescript --inputpath /protos --outputpath /output
+```
+
+### Godot モード
+
+固定で `GameFrameX.Network.Runtime` 名前空間を使用する C# コードを生成します（`--namespaceName` パラメータは無視されます）。サーバー専用 proto ファイルは自動的にスキップされます。
+
+**ローカル実行：**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode godot \
+  --inputpath ./Protobuf \
+  --outputpath ./Godot/Proto
+```
+
+**Docker 実行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Godot/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode godot --inputpath /protos --outputpath /output
+```
+
+## Docker パスマッピング
+
+Docker 使用時のパスマッピングは以下の通りです：
+
+- `-v <ホストパス>:<コンテナパス>` でホストのディレクトリをコンテナにマウントします
+- `--inputpath` と `--outputpath` には**コンテナ内パス**（例：`/protos`、`/output`）を指定します（ホストパスではありません）
+
+```bash
+# 例：ホスト ./my-protos -> コンテナ /protos
+docker run --rm \
+  -v $(pwd)/my-protos:/protos \     # ホストパス : コンテナパス
+  -v $(pwd)/my-output:/output \     # ホストパス : コンテナパス
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```

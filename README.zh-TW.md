@@ -66,34 +66,121 @@ docker run --rm \
 `--namespaceName`
 此參數用於指定命名空間。在TypeScript模式中此參數無效。在Godot模式中，生成的程式碼始終使用 `GameFrameX.Network.Runtime` 命名空間。如果不想設定命名空間，此參數可以傳空值。
 
-## 命令列範例
+## 模式詳情與範例
 
-下面的命令範例展示了如何將Proto協議文件轉換為Server程式碼：
+| 模式 | 輸出語言 | 命名空間行為 | 服務端專屬 Proto |
+|------|---------|-------------|-----------------|
+| `Server` | C# | 使用 `--namespaceName` 的值 | 包含 |
+| `Unity` | C# | 使用 `--namespaceName` 的值 | 跳過（以 `-s` 或 `_s` 結尾的檔案） |
+| `TypeScript` | TypeScript (.ts) | `--namespaceName` 無效 | 跳過（以 `-s` 或 `_s` 結尾的檔案） |
+| `Godot` | C# | 固定使用 `GameFrameX.Network.Runtime` | 跳過（以 `-s` 或 `_s` 結尾的檔案） |
 
-```
---mode server --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Server/GameFrameX.Proto/Proto --namespaceName GameFrameX.Proto.Proto
-```
+### Server 模式
 
-在上述命令範例中：
+生成帶有 `[System.ComponentModel.Description]` 特性的 C# 程式碼，包含服務端專屬 proto 檔案。
 
-- `--mode server` 表示設定執行模式為 Server。
-- `--inputpath ./../../../../../Protobuf` 表示.proto協議檔案的路徑為 `./../../../../../Protobuf`。
-- `--outputpath ./../../../../../Server/GameFrameX.Proto/Proto` 表示輸出檔案的儲存路徑為 `./../../../../../Server/GameFrameX.Proto/Proto`。
-- `--namespaceName GameFrameX.Proto.Proto` 表示命名空間設定為 `GameFrameX.Proto.Proto`。
+**本機執行：**
 
-更改命令列參數，可以根據實際需求轉換合適的程式碼。
-
-### Godot 模式範例
-
-下面的命令範例展示了如何將Proto協議文件轉換為Godot C#程式碼：
-
-```
---mode godot --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Godot/Proto --namespaceName Hotfix.Proto
+```bash
+dotnet run --project ProtoExport -- \
+  --mode server \
+  --inputpath ./Protobuf \
+  --outputpath ./Server/GameFrameX.Proto/Proto \
+  --namespaceName GameFrameX.Proto.Proto
 ```
 
-在上述命令範例中：
+**Docker 執行：**
 
-- `--mode godot` 表示設定執行模式為 Godot。
-- `--inputpath ./../../../../../Protobuf` 表示.proto協議檔案的路徑為 `./../../../../../Protobuf`。
-- `--outputpath ./../../../../../Godot/Proto` 表示輸出檔案的儲存路徑為 `./../../../../../Godot/Proto`。
-- `--namespaceName Hotfix.Proto` 表示命名空間設定為 `Hotfix.Proto`。服務端專屬的proto檔案（以 `-s` 或 `_s` 結尾）會被自動跳過。
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Server/GameFrameX.Proto/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```
+
+### Unity 模式
+
+生成使用 `GameFrameX.Network.Runtime` 命名空間的 C# 程式碼（不含 `[Description]` 特性），自動跳過服務端專屬 proto 檔案。
+
+**本機執行：**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode unity \
+  --inputpath ./Protobuf \
+  --outputpath ./Unity/Assets/Hotfix/Proto \
+  --namespaceName Hotfix.Proto
+```
+
+**Docker 執行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Unity/Assets/Hotfix/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode unity --inputpath /protos --outputpath /output --namespaceName Hotfix.Proto
+```
+
+### TypeScript 模式
+
+生成包含 `export namespace`、`export class` 和 `export enum` 的 `.ts` 檔案，並生成聚合檔案 `ProtoMessageRegister.ts`。`--namespaceName` 參數在此模式下無效。自動跳過服務端專屬 proto 檔案。
+
+**本機執行：**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode typescript \
+  --inputpath ./Protobuf \
+  --outputpath ./Laya/src/gameframex/protobuf
+```
+
+**Docker 執行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Laya/src/gameframex/protobuf:/output \
+  gameframex/gameframex-tools:latest \
+  --mode typescript --inputpath /protos --outputpath /output
+```
+
+### Godot 模式
+
+生成固定使用 `GameFrameX.Network.Runtime` 命名空間的 C# 程式碼（`--namespaceName` 參數會被忽略）。自動跳過服務端專屬 proto 檔案。
+
+**本機執行：**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode godot \
+  --inputpath ./Protobuf \
+  --outputpath ./Godot/Proto
+```
+
+**Docker 執行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Godot/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode godot --inputpath /protos --outputpath /output
+```
+
+## Docker 路徑映射說明
+
+使用 Docker 時，路徑映射規則如下：
+
+- `-v <宿主機路徑>:<容器內路徑>` 將宿主機目錄掛載到容器中
+- `--inputpath` 和 `--outputpath` 必須填寫**容器內路徑**（如 `/protos`、`/output`），而非宿主機路徑
+
+```bash
+# 範例：宿主機 ./my-protos -> 容器內 /protos
+docker run --rm \
+  -v $(pwd)/my-protos:/protos \    # 宿主機路徑 : 容器內路徑
+  -v $(pwd)/my-output:/output \    # 宿主機路徑 : 容器內路徑
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```

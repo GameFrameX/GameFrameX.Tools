@@ -66,34 +66,121 @@ docker run --rm \
 `--namespaceName`
 네임스페이스를 지정합니다. TypeScript 모드에서는 이 매개변수가 적용되지 않습니다. Godot 모드에서는 생성된 코드가 항상 `GameFrameX.Network.Runtime` 네임스페이스를 사용합니다. 네임스페이스를 설정하지 않으려면 빈 값을 전달하세요.
 
-## 명령줄 예시
+## 모드 상세 및 예시
 
-다음 명령 예시는 Proto 프로토콜 파일을 Server 코드로 변환하는 방법을 보여줍니다:
+| 모드 | 출력 언어 | 네임스페이스 동작 | 서버 전용 Proto |
+|------|----------|-----------------|----------------|
+| `Server` | C# | `--namespaceName` 값 사용 | 포함 |
+| `Unity` | C# | `--namespaceName` 값 사용 | 건너뜀 (`-s` 또는 `_s`로 끝나는 파일) |
+| `TypeScript` | TypeScript (.ts) | `--namespaceName` 무효 | 건너뜀 (`-s` 또는 `_s`로 끝나는 파일) |
+| `Godot` | C# | 항상 `GameFrameX.Network.Runtime` 사용 | 건너뜀 (`-s` 또는 `_s`로 끝나는 파일) |
 
-```
---mode server --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Server/GameFrameX.Proto/Proto --namespaceName GameFrameX.Proto.Proto
-```
+### Server 모드
 
-위의 명령 예시에서:
+`[System.ComponentModel.Description]` 속성이 포함된 C# 코드를 생성합니다. 서버 전용 proto 파일이 포함됩니다.
 
-- `--mode server`은 실행 모드를 Server로 설정합니다.
-- `--inputpath ./../../../../../Protobuf`는 .proto 프로토콜 파일 경로를 `./../../../../../Protobuf`로 설정합니다.
-- `--outputpath ./../../../../../Server/GameFrameX.Proto/Proto`는 출력 파일 경로를 `./../../../../../Server/GameFrameX.Proto/Proto`로 설정합니다.
-- `--namespaceName GameFrameX.Proto.Proto`는 네임스페이스를 `GameFrameX.Proto.Proto`로 설정합니다.
+**로컬 실행:**
 
-명령줄 매개변수를 조정하여 실제 필요에 맞는 코드를 생성할 수 있습니다.
-
-### Godot 모드 예시
-
-다음 명령 예시는 Proto 프로토콜 파일을 Godot C# 코드로 변환하는 방법을 보여줍니다:
-
-```
---mode godot --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Godot/Proto --namespaceName Hotfix.Proto
+```bash
+dotnet run --project ProtoExport -- \
+  --mode server \
+  --inputpath ./Protobuf \
+  --outputpath ./Server/GameFrameX.Proto/Proto \
+  --namespaceName GameFrameX.Proto.Proto
 ```
 
-위의 명령 예시에서:
+**Docker 실행:**
 
-- `--mode godot`은 실행 모드를 Godot으로 설정합니다.
-- `--inputpath ./../../../../../Protobuf`는 .proto 프로토콜 파일 경로를 `./../../../../../Protobuf`로 설정합니다.
-- `--outputpath ./../../../../../Godot/Proto`는 출력 파일 경로를 `./../../../../../Godot/Proto`로 설정합니다.
-- `--namespaceName Hotfix.Proto`는 네임스페이스를 `Hotfix.Proto`로 설정합니다. 서버 전용 proto 파일(`-s` 또는 `_s`로 끝나는 파일)은 자동으로 건너뜁니다.
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Server/GameFrameX.Proto/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```
+
+### Unity 모드
+
+`GameFrameX.Network.Runtime` 네임스페이스를 사용하는 C# 코드를 생성합니다 (`[Description]` 속성 없음). 서버 전용 proto 파일은 자동으로 건너뜁니다.
+
+**로컬 실행:**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode unity \
+  --inputpath ./Protobuf \
+  --outputpath ./Unity/Assets/Hotfix/Proto \
+  --namespaceName Hotfix.Proto
+```
+
+**Docker 실행:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Unity/Assets/Hotfix/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode unity --inputpath /protos --outputpath /output --namespaceName Hotfix.Proto
+```
+
+### TypeScript 모드
+
+`export namespace`, `export class`, `export enum`이 포함된 `.ts` 파일과 집계 파일 `ProtoMessageRegister.ts`를 생성합니다. 이 모드에서는 `--namespaceName` 매개변수가 무효합니다. 서버 전용 proto 파일은 자동으로 건너뜁니다.
+
+**로컬 실행:**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode typescript \
+  --inputpath ./Protobuf \
+  --outputpath ./Laya/src/gameframex/protobuf
+```
+
+**Docker 실행:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Laya/src/gameframex/protobuf:/output \
+  gameframex/gameframex-tools:latest \
+  --mode typescript --inputpath /protos --outputpath /output
+```
+
+### Godot 모드
+
+고정적으로 `GameFrameX.Network.Runtime` 네임스페이스를 사용하는 C# 코드를 생성합니다 (`--namespaceName` 매개변수는 무시됩니다). 서버 전용 proto 파일은 자동으로 건너뜁니다.
+
+**로컬 실행:**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode godot \
+  --inputpath ./Protobuf \
+  --outputpath ./Godot/Proto
+```
+
+**Docker 실행:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Godot/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode godot --inputpath /protos --outputpath /output
+```
+
+## Docker 경로 매핑
+
+Docker 사용 시 경로 매핑 규칙은 다음과 같습니다:
+
+- `-v <호스트 경로>:<컨테이너 경로>` 로 호스트 디렉토리를 컨테이너에 마운트합니다
+- `--inputpath` 와 `--outputpath` 에는 **컨테이너 내부 경로** (예: `/protos`, `/output`)를 지정해야 합니다 (호스트 경로가 아님)
+
+```bash
+# 예시: 호스트 ./my-protos -> 컨테이너 /protos
+docker run --rm \
+  -v $(pwd)/my-protos:/protos \     # 호스트 경로 : 컨테이너 경로
+  -v $(pwd)/my-output:/output \     # 호스트 경로 : 컨테이너 경로
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```

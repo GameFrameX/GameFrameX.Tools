@@ -66,34 +66,121 @@ This parameter specifies the output path for the generated files.
 `--namespaceName`
 This parameter specifies the namespace. This parameter has no effect in TypeScript mode. In Godot mode, the generated code always uses `GameFrameX.Network.Runtime` namespace. If you do not want to set a namespace, pass an empty value.
 
-## Command Line Example
+## Mode Details and Examples
 
-The following command example demonstrates how to convert Proto protocol files into Server code:
+| Mode | Output Language | Namespace Behavior | Server-only Protos |
+|------|----------------|-------------------|--------------------|
+| `Server` | C# | Uses `--namespaceName` value | Included |
+| `Unity` | C# | Uses `--namespaceName` value | Skipped (files ending with `-s` or `_s`) |
+| `TypeScript` | TypeScript (.ts) | `--namespaceName` has no effect | Skipped (files ending with `-s` or `_s`) |
+| `Godot` | C# | Always uses `GameFrameX.Network.Runtime` | Skipped (files ending with `-s` or `_s`) |
 
-```
---mode server --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Server/GameFrameX.Proto/Proto --namespaceName GameFrameX.Proto.Proto
-```
+### Server Mode
 
-In the above example:
+Generates C# code with `[System.ComponentModel.Description]` attributes. Server-only proto files are included.
 
-- `--mode server` sets the run mode to Server.
-- `--inputpath ./../../../../../Protobuf` sets the .proto protocol file path to `./../../../../../Protobuf`.
-- `--outputpath ./../../../../../Server/GameFrameX.Proto/Proto` sets the output file path to `./../../../../../Server/GameFrameX.Proto/Proto`.
-- `--namespaceName GameFrameX.Proto.Proto` sets the namespace to `GameFrameX.Proto.Proto`.
+**Local:**
 
-You can adjust the command-line parameters to generate the appropriate code for your needs.
-
-### Godot Mode Example
-
-The following command example demonstrates how to convert Proto protocol files into Godot C# code:
-
-```
---mode godot --inputpath ./../../../../../Protobuf --outputpath ./../../../../../Godot/Proto --namespaceName Hotfix.Proto
+```bash
+dotnet run --project ProtoExport -- \
+  --mode server \
+  --inputpath ./Protobuf \
+  --outputpath ./Server/GameFrameX.Proto/Proto \
+  --namespaceName GameFrameX.Proto.Proto
 ```
 
-In the above example:
+**Docker:**
 
-- `--mode godot` sets the run mode to Godot.
-- `--inputpath ./../../../../../Protobuf` sets the .proto protocol file path to `./../../../../../Protobuf`.
-- `--outputpath ./../../../../../Godot/Proto` sets the output file path to `./../../../../../Godot/Proto`.
-- `--namespaceName Hotfix.Proto` sets the namespace to `Hotfix.Proto`. Server-only proto files (ending with `-s` or `_s`) are automatically skipped.
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Server/GameFrameX.Proto/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```
+
+### Unity Mode
+
+Generates C# code using the `GameFrameX.Network.Runtime` namespace (without `[Description]` attributes). Server-only proto files are automatically skipped.
+
+**Local:**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode unity \
+  --inputpath ./Protobuf \
+  --outputpath ./Unity/Assets/Hotfix/Proto \
+  --namespaceName Hotfix.Proto
+```
+
+**Docker:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Unity/Assets/Hotfix/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode unity --inputpath /protos --outputpath /output --namespaceName Hotfix.Proto
+```
+
+### TypeScript Mode
+
+Generates `.ts` files with `export namespace`, `export class`, and `export enum`, plus an aggregated `ProtoMessageRegister.ts` file. The `--namespaceName` parameter has no effect in this mode. Server-only proto files are automatically skipped.
+
+**Local:**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode typescript \
+  --inputpath ./Protobuf \
+  --outputpath ./Laya/src/gameframex/protobuf
+```
+
+**Docker:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Laya/src/gameframex/protobuf:/output \
+  gameframex/gameframex-tools:latest \
+  --mode typescript --inputpath /protos --outputpath /output
+```
+
+### Godot Mode
+
+Generates C# code with the fixed `GameFrameX.Network.Runtime` namespace (the `--namespaceName` parameter is ignored). Server-only proto files are automatically skipped.
+
+**Local:**
+
+```bash
+dotnet run --project ProtoExport -- \
+  --mode godot \
+  --inputpath ./Protobuf \
+  --outputpath ./Godot/Proto
+```
+
+**Docker:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Godot/Proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode godot --inputpath /protos --outputpath /output
+```
+
+## Docker Path Mapping
+
+When using Docker, paths are mapped as follows:
+
+- `-v <host-path>:<container-path>` mounts a host directory into the container
+- `--inputpath` and `--outputpath` must reference the **container-side** paths (e.g. `/protos`, `/output`), not the host paths
+
+```bash
+# Example: host ./my-protos -> container /protos
+docker run --rm \
+  -v $(pwd)/my-protos:/protos \   # host path : container path
+  -v $(pwd)/my-output:/output \   # host path : container path
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```
