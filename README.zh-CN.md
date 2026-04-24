@@ -24,6 +24,32 @@
 
 这是一个用于将Proto协议文件转换为 `Server/Unity/TypeScript/Godot` 代码的工具。
 
+# Docker
+
+预构建的 Docker 镜像支持 `linux/amd64` 和 `linux/arm64` 架构。
+
+**Docker Hub**
+
+```bash
+docker pull gameframex/gameframex-tools:latest
+```
+
+**GitHub Container Registry (GHCR)**
+
+```bash
+docker pull ghcr.io/gameframex/gameframex.tools:latest
+```
+
+**使用示例**
+
+```bash
+docker run --rm \
+  -v /path/to/protos:/protos \
+  -v /path/to/output:/output \
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```
+
 # 参数解析
 
 以下是此工具命令行参数的详细说明：

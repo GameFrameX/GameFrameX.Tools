@@ -24,6 +24,32 @@
 
 Proto 프로토콜 파일을 `Server/Unity/TypeScript/Godot` 코드로 변환하는 도구입니다.
 
+# Docker
+
+`linux/amd64` 및 `linux/arm64` 용 Docker 이미지가 제공됩니다.
+
+**Docker Hub**
+
+```bash
+docker pull gameframex/gameframex-tools:latest
+```
+
+**GitHub Container Registry (GHCR)**
+
+```bash
+docker pull ghcr.io/gameframex/gameframex.tools:latest
+```
+
+**사용 예시**
+
+```bash
+docker run --rm \
+  -v /path/to/protos:/protos \
+  -v /path/to/output:/output \
+  gameframex/gameframex-tools:latest \
+  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+```
+
 # 매개변수 설명
 
 이 도구의 명령줄 매개변수에 대한 자세한 설명은 다음과 같습니다.
