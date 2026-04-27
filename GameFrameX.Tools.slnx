@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ProtoExport/ProtoExport.csproj" />
+  <Project Path="ToolGUIProto/ToolGUIProto.csproj" />
+</Solution>
