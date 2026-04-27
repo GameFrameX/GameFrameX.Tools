@@ -122,6 +122,18 @@ message PlayerInfo
 
 전체 프로토콜 사양은 [통신 프로토콜 사양](https://gameframex.doc.alianblank.com/zh-CN/protobuf/require.html) 및 [주의사항](https://gameframex.doc.alianblank.com/zh-CN/protobuf/note.html) 문서를 참조하세요.
 
+## 샘플 Proto 파일
+
+[TestProtos/](TestProtos/) 디렉토리에는 주요 패턴을 포괄하는 샘플 proto 파일이 있습니다:
+
+| 파일 | 패턴 | 모듈 ID |
+|------|------|---------|
+| `heartbeat.proto` | 기본 Req/Resp | `1` (클라이언트-서버) |
+| `player.proto` | Req/Resp/Notify + enum + map | `2` (클라이언트-서버) |
+| `bag.proto` | enum + repeated + map + Notify | `3` (클라이언트-서버) |
+| `admin-s.proto` | 서버 전용 프로토콜 (`-s` 접미사) | `99` (클라이언트-서버) |
+| `server-internal-s.proto` | 서버 간 통신 (음수 모듈 ID) | `-1` (서버-서버) |
+
 ---
 
 # 매개변수 설명

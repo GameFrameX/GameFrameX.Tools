@@ -122,6 +122,18 @@ message PlayerInfo
 
 完整的協議規範請參考 [通訊協議規範](https://gameframex.doc.alianblank.com/zh-CN/protobuf/require.html) 和 [注意事項](https://gameframex.doc.alianblank.com/zh-CN/protobuf/note.html) 文件。
 
+## 範例 Proto 檔案
+
+[TestProtos/](TestProtos/) 目錄下提供了覆蓋所有主要模式的範例 proto 檔案：
+
+| 檔案 | 模式 | 模組 ID |
+|------|------|---------|
+| `heartbeat.proto` | 基礎 Req/Resp | `1`（用戶端-伺服器端） |
+| `player.proto` | Req/Resp/Notify + enum + map | `2`（用戶端-伺服器端） |
+| `bag.proto` | enum + repeated + map + Notify | `3`（用戶端-伺服器端） |
+| `admin-s.proto` | 伺服器端專屬協議（`-s` 後綴） | `99`（用戶端-伺服器端） |
+| `server-internal-s.proto` | 伺服器端間通訊（負值模組 ID） | `-1`（伺服器端-伺服器端） |
+
 ---
 
 # 參數解析

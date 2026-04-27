@@ -122,6 +122,18 @@ message PlayerInfo
 
 完全なプロトコル仕様については [通信プロトコル仕様](https://gameframex.doc.alianblank.com/zh-CN/protobuf/require.html) と [注意事項](https://gameframex.doc.alianblank.com/zh-CN/protobuf/note.html) のドキュメントを参照してください。
 
+## サンプル Proto ファイル
+
+[TestProtos/](TestProtos/) ディレクトリには、主要なパターンを網羅したサンプル proto ファイルが含まれています：
+
+| ファイル | パターン | モジュール ID |
+|----------|----------|--------------|
+| `heartbeat.proto` | 基本的な Req/Resp | `1`（クライアント-サーバー） |
+| `player.proto` | Req/Resp/Notify + enum + map | `2`（クライアント-サーバー） |
+| `bag.proto` | enum + repeated + map + Notify | `3`（クライアント-サーバー） |
+| `admin-s.proto` | サーバー専用プロトコル（`-s` 接尾辞） | `99`（クライアント-サーバー） |
+| `server-internal-s.proto` | サーバー間通信（負のモジュール ID） | `-1`（サーバー-サーバー） |
+
 ---
 
 # パラメータ解説

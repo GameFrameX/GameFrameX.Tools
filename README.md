@@ -122,6 +122,18 @@ message PlayerInfo
 
 For the complete protocol specification, see the [Protocol Requirements](https://gameframex.doc.alianblank.com/en-US/protobuf/require.html) and [Notes](https://gameframex.doc.alianblank.com/en-US/protobuf/note.html) documentation.
 
+## Example Proto Files
+
+The [TestProtos/](TestProtos/) directory contains example proto files covering all major patterns:
+
+| File | Pattern | Module ID |
+|------|---------|-----------|
+| `heartbeat.proto` | Basic Req/Resp | `1` (client-server) |
+| `player.proto` | Req/Resp/Notify + enum + map | `2` (client-server) |
+| `bag.proto` | enum + repeated + map + Notify | `3` (client-server) |
+| `admin-s.proto` | Server-only proto (`-s` suffix) | `99` (client-server) |
+| `server-internal-s.proto` | Server-server communication (negative module ID) | `-1` (server-server) |
+
 ---
 
 # Parameter Reference

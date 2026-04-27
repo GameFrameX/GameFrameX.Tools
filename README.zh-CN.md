@@ -122,6 +122,18 @@ message PlayerInfo
 
 完整的协议规范请参考 [通讯协议规范](https://gameframex.doc.alianblank.com/zh-CN/protobuf/require.html) 和 [注意事项](https://gameframex.doc.alianblank.com/zh-CN/protobuf/note.html) 文档。
 
+## 示例 Proto 文件
+
+[TestProtos/](TestProtos/) 目录下提供了覆盖所有主要模式的示例 proto 文件：
+
+| 文件 | 模式 | 模块 ID |
+|------|------|---------|
+| `heartbeat.proto` | 基础 Req/Resp | `1`（客户端-服务端） |
+| `player.proto` | Req/Resp/Notify + enum + map | `2`（客户端-服务端） |
+| `bag.proto` | enum + repeated + map + Notify | `3`（客户端-服务端） |
+| `admin-s.proto` | 服务端专属协议（`-s` 后缀） | `99`（客户端-服务端） |
+| `server-internal-s.proto` | 服务端间通讯（负值模块 ID） | `-1`（服务端-服务端） |
+
 ---
 
 # 参数解析
