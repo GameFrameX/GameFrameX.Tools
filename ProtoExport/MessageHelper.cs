@@ -43,7 +43,7 @@ public static partial class MessageHelper
             else
             {
                 Console.WriteLine("Module range error");
-                throw new ArgumentOutOfRangeException("module", $"Module range error==>module > {short.MinValue} and module < {short.MaxValue}");
+                throw new FormatException($"Module range error==>module > {short.MinValue} and module < {short.MaxValue}");
             }
         }
         else
@@ -237,11 +237,11 @@ public static partial class MessageHelper
                             if (key.Trim().StartsWith("repeated"))
                             {
                                 field.IsRepeated = true;
-                                field.Type = TypeMapper.ToCSharp(fieldSplitStrings[1].Trim());
+                                field.Type = fieldSplitStrings[1].Trim();
                             }
                             else
                             {
-                                field.Type = TypeMapper.ToCSharp(key + fieldSplitStrings[1].Trim());
+                                field.Type = key + fieldSplitStrings[1].Trim();
                                 if (key.Trim().StartsWith("map"))
                                 {
                                     field.IsKv = true;
@@ -259,7 +259,7 @@ public static partial class MessageHelper
                         }
                         else if (fieldSplitStrings.Length > 1)
                         {
-                            field.Type = TypeMapper.ToCSharp(fieldSplitStrings[0].Trim());
+                            field.Type = fieldSplitStrings[0].Trim();
                             var name = fieldSplitStrings[1].Trim();
                             if (!Utility.IsCamelCase(name))
                             {
@@ -277,7 +277,7 @@ public static partial class MessageHelper
                 MessageMember field = new MessageMember();
                 field.Description = "返回的错误码";
                 field.Name = "ErrorCode";
-                field.Type = TypeMapper.ToCSharp("int32");
+                field.Type = "int32";
                 field.Members = 2047;
                 info.Fields.Add(field);
             }
