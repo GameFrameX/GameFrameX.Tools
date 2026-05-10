@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using GameFrameX.ProtoExport;
 using Newtonsoft.Json;
@@ -12,9 +12,47 @@ public class SettingData
     public SettingData()
     {
         Options = new Dictionary<string, LauncherOptions>();
-        Options.Add("Server", new LauncherOptions { Mode = ModeType.Server.ToString(), IsGenerateErrorCode = true, NamespaceName = "GameFrameX.Proto.Proto", OutputPath = "./../../../../../Server/GameFrameX.Proto/Proto", InputPath = "./../../../../../Protobuf" });
-        Options.Add("Unity", new LauncherOptions { Mode = ModeType.Unity.ToString(), IsGenerateErrorCode = true, NamespaceName = "Hotfix.Proto", OutputPath = "./../../../../../Unity/Assets/Hotfix/Proto", InputPath = "./../../../../../Protobuf" });
-        Options.Add("TypeScript", new LauncherOptions { Mode = ModeType.TypeScript.ToString(), IsGenerateErrorCode = true, NamespaceName = "", OutputPath = "./../../../../../Laya/src/gameframex/protobuf", InputPath = "./../../../../../Protobuf" });
+        Options.Add("Server", new LauncherOptions
+        {
+            Mode = ModeType.CSharp.ToString(),
+            UsingStatements = "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages",
+            IsGenerateDescription = true,
+            IsServer = true,
+            IsGenerateErrorCode = true,
+            NamespaceName = "GameFrameX.Proto.Proto",
+            OutputPath = "./../../../../../Server/GameFrameX.Proto/Proto",
+            InputPath = "./../../../../../Protobuf"
+        });
+        Options.Add("Unity", new LauncherOptions
+        {
+            Mode = ModeType.CSharp.ToString(),
+            UsingStatements = "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime",
+            IsGenerateDescription = false,
+            IsServer = false,
+            IsGenerateErrorCode = true,
+            NamespaceName = "Hotfix.Proto",
+            OutputPath = "./../../../../../Unity/Assets/Hotfix/Proto",
+            InputPath = "./../../../../../Protobuf"
+        });
+        Options.Add("Godot", new LauncherOptions
+        {
+            Mode = ModeType.CSharp.ToString(),
+            UsingStatements = "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime",
+            IsGenerateDescription = false,
+            IsServer = false,
+            IsGenerateErrorCode = true,
+            NamespaceName = "Proto",
+            OutputPath = "./../../../../../Godot/Proto",
+            InputPath = "./../../../../../Protobuf"
+        });
+        Options.Add("TypeScript", new LauncherOptions
+        {
+            Mode = ModeType.TypeScript.ToString(),
+            IsGenerateErrorCode = true,
+            NamespaceName = "",
+            OutputPath = "./../../../../../Laya/src/gameframex/protobuf",
+            InputPath = "./../../../../../Protobuf"
+        });
     }
 
     public static SettingData Instance { get; } = new SettingData();

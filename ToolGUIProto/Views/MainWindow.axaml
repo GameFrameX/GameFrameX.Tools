@@ -22,6 +22,7 @@
             <ComboBox Name="Mode" Width="300" VerticalAlignment="Center" SelectedIndex="1" SelectionChanged="Mode_OnSelectionChanged">
                 <ComboBoxItem>Server</ComboBoxItem>
                 <ComboBoxItem>Unity</ComboBoxItem>
+                <ComboBoxItem>Godot</ComboBoxItem>
                 <ComboBoxItem>TypeScript</ComboBoxItem>
             </ComboBox>
         </StackPanel>

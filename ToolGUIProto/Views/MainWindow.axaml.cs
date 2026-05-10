@@ -25,7 +25,7 @@ public partial class MainWindow : Window
         Console.SetOut(stringWriter);
         timer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromMilliseconds(100), // 每100毫秒检查一次
+            Interval = TimeSpan.FromMilliseconds(100),
         };
         timer.Tick += Timer_Tick;
         SettingData.LoadSetting();
@@ -41,7 +41,6 @@ public partial class MainWindow : Window
 
     private void Timer_Tick(object sender, EventArgs e)
     {
-        // 捕捉 Console 输出
         var output = stringWriter.ToString();
         ErrorLog.Text = output;
     }
@@ -50,14 +49,27 @@ public partial class MainWindow : Window
     {
         stringWriter.GetStringBuilder().Clear();
         timer.Start();
+
+        var modeName = this.Mode.SelectionBoxItem?.ToString();
+        var savedOptions = SettingData.GetOptions(modeName);
+        if (savedOptions == null)
+        {
+            Console.WriteLine("不支持的运行模式");
+            return;
+        }
+
         LauncherOptions launcherOptions = new LauncherOptions
         {
-            Mode = this.Mode.SelectionBoxItem?.ToString(),
+            Mode = savedOptions.Mode,
+            UsingStatements = savedOptions.UsingStatements,
+            IsGenerateDescription = savedOptions.IsGenerateDescription,
+            IsServer = savedOptions.IsServer,
             InputPath = this.InputPath.Text,
             OutputPath = this.OutputPath.Text,
             NamespaceName = this.NameSpace.Text,
             IsGenerateErrorCode = Convert.ToBoolean(this.IsGenerateErrorCode.IsChecked),
         };
+
         if (!Enum.TryParse<ModeType>(launcherOptions.Mode, true, out var modeType))
         {
             Console.WriteLine("不支持的运行模式");
@@ -84,11 +96,10 @@ public partial class MainWindow : Window
 
         #region Save
 
-        var options = SettingData.GetOptions(launcherOptions.Mode);
-        options.InputPath = launcherOptions.InputPath;
-        options.OutputPath = launcherOptions.OutputPath;
-        options.NamespaceName = launcherOptions.NamespaceName;
-        options.IsGenerateErrorCode = launcherOptions.IsGenerateErrorCode;
+        savedOptions.InputPath = launcherOptions.InputPath;
+        savedOptions.OutputPath = launcherOptions.OutputPath;
+        savedOptions.NamespaceName = launcherOptions.NamespaceName;
+        savedOptions.IsGenerateErrorCode = launcherOptions.IsGenerateErrorCode;
         SettingData.SaveSetting();
 
         #endregion
@@ -116,7 +127,7 @@ public partial class MainWindow : Window
         Process.Start(new ProcessStartInfo
         {
             FileName = "https://gameframex.doc.alianblank.com/tools/proto/launcher-params.html",
-            UseShellExecute = true // 使用系统外壳来打开 URL
+            UseShellExecute = true
         });
     }
 }
