@@ -13,10 +13,9 @@ namespace GameFrameX.ProtoExport
             StringBuilder sb = new StringBuilder();
             sb.AddTemplateHeader();
 
-            foreach (var usingStatement in _usingStatements)
-            {
-                sb.AppendLine(usingStatement);
-            }
+            var normalizedStatements = string.Join(Environment.NewLine,
+                _usingStatements.Select(s => s.Trim().TrimEnd(';') + ";"));
+            sb.AppendLine(normalizedStatements);
 
             sb.AppendLine();
             sb.AppendLine($"namespace {namespaceName}");
