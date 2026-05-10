@@ -22,7 +22,7 @@
 
 # ProtoExport ツール
 
-Proto プロトコルファイルを `Server/Unity/TypeScript/Godot` コードに変換するツールです。
+言語別エクスポートの Proto プロトコルコード生成ツールです。C#、TypeScript に対応、C++ と Lua は開発中です。
 
 # Docker
 
@@ -47,7 +47,7 @@ docker run --rm \
   -v /path/to/protos:/protos \
   -v /path/to/output:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" --isGenerateDescription true --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
 # Proto プロトコル仕様
@@ -138,41 +138,69 @@ message PlayerInfo
 
 # パラメータ解説
 
-このツールのコマンドラインパラメータの詳細説明は以下の通りです。
+## コアパラメータ
 
-`--mode`
-実行モードを指定します。有効な値は `Server`, `Unity`, `TypeScript`, または `Godot` のいずれかです。
+| パラメータ | 必須 | デフォルト | 説明 |
+|-----------|------|-----------|------|
+| `--mode` | はい | - | 言語モード：`csharp`、`typescript`、`cpp`、`lua` |
+| `--inputPath` | はい | - | `.proto` ファイルのディレクトリパス |
+| `--outputPath` | はい | - | 生成ファイルの出力パス |
+| `--namespaceName` | いいえ | `""` | 生成コードの名前空間（C# のみ有効、TypeScript では無視） |
+| `--isGenerateErrorCode` | いいえ | `true` | レスポンスメッセージに `ErrorCode` フィールドを自動生成するか |
 
-`--inputpath`
-.proto プロトコルファイルのパスを指定します。プログラムは指定されたパス以下のすべての .proto ファイルをスキャンします。
+## C# 専用パラメータ
 
-`--outputpath`
-生成されたファイルの出力パスを指定します。
+| パラメータ | 必須 | デフォルト | 説明 |
+|-----------|------|-----------|------|
+| `--usingStatements` | いいえ | `""` | using 文を `\|` で区切って指定（例：`"using System\|using ProtoBuf\|using System.Collections.Generic"`） |
+| `--isGenerateDescription` | いいえ | `false` | `[System.ComponentModel.Description]` 属性を生成するか |
+| `--isServer` | いいえ | `false` | サーバー専用 proto ファイル（`-s` または `_s` で終わるファイル）を含めるか |
 
-`--namespaceName`
-名前空間を指定します。TypeScript モードではこのパラメータは無効です。Godot モードでは、生成されたコードは常に `GameFrameX.Network.Runtime` 名前空間を使用します。名前空間を設定しない場合は空の値を渡してください。
+## TypeScript 専用パラメータ
 
-## モード詳細と例
+| パラメータ | 必須 | デフォルト | 説明 |
+|-----------|------|-----------|------|
+| `--importPath` | いいえ | `"../network/"` | 生成される import 文のパスプレフィックス |
+| `--isGenerateDescription` | いいえ | `false` | JSDoc スタイルのコメントを生成するか |
 
-| モード | 出力言語 | 名前空間の動作 | サーバー専用 Proto |
-|--------|---------|--------------|-------------------|
-| `Server` | C# | `--namespaceName` の値を使用 | 含む |
-| `Unity` | C# | `--namespaceName` の値を使用 | スキップ（`-s` または `_s` で終わるファイル） |
-| `TypeScript` | TypeScript (.ts) | `--namespaceName` は無効 | スキップ（`-s` または `_s` で終わるファイル） |
-| `Godot` | C# | 常に `GameFrameX.Network.Runtime` を使用 | スキップ（`-s` または `_s` で終わるファイル） |
+## その他のパラメータ
 
-### Server モード
+| パラメータ | 必須 | デフォルト | 説明 |
+|-----------|------|-----------|------|
+| `--isGenerateErrorCodeExcelFile` | いいえ | `true` | エラーコード Excel ファイルを生成するか |
+| `--errorCodeExcelFilePath` | いいえ | `""` | エラーコード Excel ファイルのカスタムパス |
 
-`[System.ComponentModel.Description]` 属性付きの C# コードを生成します。サーバー専用 proto ファイルを含みます。
+---
+
+# モード詳細と例
+
+| モード | 出力言語 | ファイル拡張子 | 説明 |
+|--------|---------|--------------|------|
+| `csharp` | C# | `.cs` | Server、Unity、Godot、Stride、Flax などに対応 |
+| `typescript` | TypeScript | `.ts` | LayaAir、Cocos Creator、Phaser などに対応 |
+| `cpp` | C++ | `.h`/`.cpp` | Unreal Engine などに対応（未実装） |
+| `lua` | Lua | `.lua` | Defold、Solar2D などに対応（未実装） |
+
+## C# モード
+
+`[ProtoContract]` / `[ProtoMember]` 属性付きの C# コードを生成します。すべての動作は CLI パラメータで制御され、エンジン固有のハードコードはありません。
+
+### サーバーエクスポート
+
+サーバー用の using 文、`[Description]` 属性付きのコードを生成し、サーバー専用 proto ファイルを含めます。
 
 **ローカル実行：**
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode server \
-  --inputpath ./Protobuf \
-  --outputpath ./Server/GameFrameX.Proto/Proto \
-  --namespaceName GameFrameX.Proto.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Server/GameFrameX.Proto/Proto \
+  --namespaceName GameFrameX.Proto.Proto \
+  --isGenerateErrorCode true
 ```
 
 **Docker 実行：**
@@ -182,44 +210,63 @@ docker run --rm \
   -v ./Protobuf:/protos \
   -v ./Server/GameFrameX.Proto/Proto:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
-### Unity モード
+### Unity エクスポート
 
-`GameFrameX.Network.Runtime` 名前空間を使用する C# コードを生成します（`[Description]` 属性なし）。サーバー専用 proto ファイルは自動的にスキップされます。
-
-**ローカル実行：**
+Unity 用の using 文付きコードを生成し、サーバー専用 proto ファイルは自動的にスキップされます。
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode unity \
-  --inputpath ./Protobuf \
-  --outputpath ./Unity/Assets/Hotfix/Proto \
-  --namespaceName Hotfix.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Unity/Assets/Hotfix/Proto \
+  --namespaceName Hotfix.Proto \
+  --isGenerateErrorCode true
 ```
 
-**Docker 実行：**
+### Godot エクスポート
+
+Unity と同様ですが、Godot 固有の名前空間を使用します。
 
 ```bash
-docker run --rm \
-  -v ./Protobuf:/protos \
-  -v ./Unity/Assets/Hotfix/Proto:/output \
-  gameframex/gameframex-tools:latest \
-  --mode unity --inputpath /protos --outputpath /output --namespaceName Hotfix.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Godot/Proto \
+  --namespaceName Proto \
+  --isGenerateErrorCode true
 ```
 
-### TypeScript モード
+## TypeScript モード
 
-`export namespace`、`export class`、`export enum` を含む `.ts` ファイルと、集約ファイル `ProtoMessageRegister.ts` を生成します。このモードでは `--namespaceName` パラメータは無効です。サーバー専用 proto ファイルは自動的にスキップされます。
+`export namespace`、`export class`、`export enum` を含む `.ts` ファイルと、集約ファイル `ProtoMessageRegister.ts` を生成します。サーバー専用 proto ファイルは自動的にスキップされます。
 
-**ローカル実行：**
+### デフォルト import パス
 
 ```bash
-dotnet run --project ProtoExport -- \
+dotnet ProtoExport.dll \
   --mode typescript \
-  --inputpath ./Protobuf \
-  --outputpath ./Laya/src/gameframex/protobuf
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Laya/src/gameframex/protobuf \
+  --isGenerateErrorCode true
+```
+
+### カスタム import パス
+
+```bash
+dotnet ProtoExport.dll \
+  --mode typescript \
+  --importPath "./lib/network/" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../CocosCreator/assets/scripts/protobuf \
+  --isGenerateErrorCode true
 ```
 
 **Docker 実行：**
@@ -229,44 +276,56 @@ docker run --rm \
   -v ./Protobuf:/protos \
   -v ./Laya/src/gameframex/protobuf:/output \
   gameframex/gameframex-tools:latest \
-  --mode typescript --inputpath /protos --outputpath /output
+  --mode typescript --inputPath /protos --outputPath /output
 ```
 
-### Godot モード
-
-固定で `GameFrameX.Network.Runtime` 名前空間を使用する C# コードを生成します（`--namespaceName` パラメータは無視されます）。サーバー専用 proto ファイルは自動的にスキップされます。
-
-**ローカル実行：**
+## C++ モード（開発中）
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode godot \
-  --inputpath ./Protobuf \
-  --outputpath ./Godot/Proto
+dotnet ProtoExport.dll \
+  --mode cpp \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Unreal/Source/Proto
 ```
 
-**Docker 実行：**
+## Lua モード（開発中）
 
 ```bash
-docker run --rm \
-  -v ./Protobuf:/protos \
-  -v ./Godot/Proto:/output \
-  gameframex/gameframex-tools:latest \
-  --mode godot --inputpath /protos --outputpath /output
+dotnet ProtoExport.dll \
+  --mode lua \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Defold/scripts/protobuf
 ```
 
-## Docker パスマッピング
+---
+
+# クイックエクスポートスクリプト
+
+`Protobuf/` ディレクトリにプリセットのエクスポートスクリプトが用意されています：
+
+| スクリプト | 説明 |
+|-----------|------|
+| `Proto2CsExport_Server.sh/.bat` | C# サーバー用コードのエクスポート |
+| `Proto2CsExport_Client.sh/.bat` | C# Unity クライアント用コードのエクスポート |
+| `Proto2TsExport.sh/.bat` | TypeScript コードのエクスポート |
+
+---
+
+# Docker パスマッピング
 
 Docker 使用時のパスマッピングは以下の通りです：
 
 - `-v <ホストパス>:<コンテナパス>` でホストのディレクトリをコンテナにマウントします
-- `--inputpath` と `--outputpath` には**コンテナ内パス**（例：`/protos`、`/output`）を指定します（ホストパスではありません）
+- `--inputPath` と `--outputPath` には**コンテナ内パス**（例：`/protos`、`/output`）を指定します（ホストパスではありません）
 
 ```bash
 # 例：ホスト ./my-protos -> コンテナ /protos
 docker run --rm \
-  -v $(pwd)/my-protos:/protos \     # ホストパス : コンテナパス
-  -v $(pwd)/my-output:/output \     # ホストパス : コンテナパス
+  -v $(pwd)/my-protos:/protos \
+  -v $(pwd)/my-output:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```

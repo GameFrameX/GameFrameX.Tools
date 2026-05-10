@@ -22,7 +22,7 @@
 
 # ProtoExport 도구
 
-Proto 프로토콜 파일을 `Server/Unity/TypeScript/Godot` 코드로 변환하는 도구입니다.
+언어별 내보내기 Proto 프로토콜 코드 생성 도구입니다. C#, TypeScript를 지원하며 C++과 Lua는 개발 중입니다.
 
 # Docker
 
@@ -47,7 +47,7 @@ docker run --rm \
   -v /path/to/protos:/protos \
   -v /path/to/output:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" --isGenerateDescription true --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
 # Proto 프로토콜 사양
@@ -138,41 +138,69 @@ message PlayerInfo
 
 # 매개변수 설명
 
-이 도구의 명령줄 매개변수에 대한 자세한 설명은 다음과 같습니다.
+## 핵심 매개변수
 
-`--mode`
-실행 모드를 지정합니다. 유효한 값은 `Server`, `Unity`, `TypeScript` 또는 `Godot` 중 하나입니다.
+| 매개변수 | 필수 | 기본값 | 설명 |
+|---------|------|--------|------|
+| `--mode` | 예 | - | 언어 모드: `csharp`, `typescript`, `cpp`, `lua` |
+| `--inputPath` | 예 | - | `.proto` 파일 디렉토리 경로 |
+| `--outputPath` | 예 | - | 생성 파일의 출력 경로 |
+| `--namespaceName` | 아니오 | `""` | 생성 코드의 네임스페이스 (C#만 적용, TypeScript는 무시) |
+| `--isGenerateErrorCode` | 아니오 | `true` | 응답 메시지에 `ErrorCode` 필드를 자동 생성할지 여부 |
 
-`--inputpath`
-.proto 프로토콜 파일의 경로를 지정합니다. 프로그램은 지정된 경로 아래의 모든 .proto 파일을 스캔합니다.
+## C# 전용 매개변수
 
-`--outputpath`
-생성된 파일의 출력 경로를 지정합니다.
+| 매개변수 | 필수 | 기본값 | 설명 |
+|---------|------|--------|------|
+| `--usingStatements` | 아니오 | `""` | using 문을 `\|`로 구분하여 지정 (예: `"using System\|using ProtoBuf\|using System.Collections.Generic"`) |
+| `--isGenerateDescription` | 아니오 | `false` | `[System.ComponentModel.Description]` 속성을 생성할지 여부 |
+| `--isServer` | 아니오 | `false` | 서버 전용 proto 파일 (`-s` 또는 `_s`로 끝나는 파일)을 포함할지 여부 |
 
-`--namespaceName`
-네임스페이스를 지정합니다. TypeScript 모드에서는 이 매개변수가 적용되지 않습니다. Godot 모드에서는 생성된 코드가 항상 `GameFrameX.Network.Runtime` 네임스페이스를 사용합니다. 네임스페이스를 설정하지 않으려면 빈 값을 전달하세요.
+## TypeScript 전용 매개변수
 
-## 모드 상세 및 예시
+| 매개변수 | 필수 | 기본값 | 설명 |
+|---------|------|--------|------|
+| `--importPath` | 아니오 | `"../network/"` | 생성되는 import 문의 경로 접두사 |
+| `--isGenerateDescription` | 아니오 | `false` | JSDoc 스타일 주석을 생성할지 여부 |
 
-| 모드 | 출력 언어 | 네임스페이스 동작 | 서버 전용 Proto |
-|------|----------|-----------------|----------------|
-| `Server` | C# | `--namespaceName` 값 사용 | 포함 |
-| `Unity` | C# | `--namespaceName` 값 사용 | 건너뜀 (`-s` 또는 `_s`로 끝나는 파일) |
-| `TypeScript` | TypeScript (.ts) | `--namespaceName` 무효 | 건너뜀 (`-s` 또는 `_s`로 끝나는 파일) |
-| `Godot` | C# | 항상 `GameFrameX.Network.Runtime` 사용 | 건너뜀 (`-s` 또는 `_s`로 끝나는 파일) |
+## 기타 매개변수
 
-### Server 모드
+| 매개변수 | 필수 | 기본값 | 설명 |
+|---------|------|--------|------|
+| `--isGenerateErrorCodeExcelFile` | 아니오 | `true` | 에러 코드 Excel 파일을 생성할지 여부 |
+| `--errorCodeExcelFilePath` | 아니오 | `""` | 에러 코드 Excel 파일의 사용자 지정 경로 |
 
-`[System.ComponentModel.Description]` 속성이 포함된 C# 코드를 생성합니다. 서버 전용 proto 파일이 포함됩니다.
+---
+
+# 모드 상세 및 예시
+
+| 모드 | 출력 언어 | 파일 확장자 | 설명 |
+|------|----------|------------|------|
+| `csharp` | C# | `.cs` | Server, Unity, Godot, Stride, Flax 등에 적용 |
+| `typescript` | TypeScript | `.ts` | LayaAir, Cocos Creator, Phaser 등에 적용 |
+| `cpp` | C++ | `.h`/`.cpp` | Unreal Engine 등에 적용 (미구현) |
+| `lua` | Lua | `.lua` | Defold, Solar2D 등에 적용 (미구현) |
+
+## C# 모드
+
+`[ProtoContract]` / `[ProtoMember]` 속성이 포함된 C# 코드를 생성합니다. 모든 동작은 CLI 매개변수로 제어되며, 엔진별 하드코딩이 없습니다.
+
+### 서버 내보내기
+
+서버용 using 문, `[Description]` 속성이 포함된 코드를 생성하며 서버 전용 proto 파일을 포함합니다.
 
 **로컬 실행:**
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode server \
-  --inputpath ./Protobuf \
-  --outputpath ./Server/GameFrameX.Proto/Proto \
-  --namespaceName GameFrameX.Proto.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Server/GameFrameX.Proto/Proto \
+  --namespaceName GameFrameX.Proto.Proto \
+  --isGenerateErrorCode true
 ```
 
 **Docker 실행:**
@@ -182,44 +210,63 @@ docker run --rm \
   -v ./Protobuf:/protos \
   -v ./Server/GameFrameX.Proto/Proto:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
-### Unity 모드
+### Unity 내보내기
 
-`GameFrameX.Network.Runtime` 네임스페이스를 사용하는 C# 코드를 생성합니다 (`[Description]` 속성 없음). 서버 전용 proto 파일은 자동으로 건너뜁니다.
-
-**로컬 실행:**
+Unity용 using 문이 포함된 코드를 생성하며 서버 전용 proto 파일은 자동으로 건너뜁니다.
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode unity \
-  --inputpath ./Protobuf \
-  --outputpath ./Unity/Assets/Hotfix/Proto \
-  --namespaceName Hotfix.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Unity/Assets/Hotfix/Proto \
+  --namespaceName Hotfix.Proto \
+  --isGenerateErrorCode true
 ```
 
-**Docker 실행:**
+### Godot 내보내기
+
+Unity와 유사하지만 Godot 전용 네임스페이스를 사용합니다.
 
 ```bash
-docker run --rm \
-  -v ./Protobuf:/protos \
-  -v ./Unity/Assets/Hotfix/Proto:/output \
-  gameframex/gameframex-tools:latest \
-  --mode unity --inputpath /protos --outputpath /output --namespaceName Hotfix.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Godot/Proto \
+  --namespaceName Proto \
+  --isGenerateErrorCode true
 ```
 
-### TypeScript 모드
+## TypeScript 모드
 
-`export namespace`, `export class`, `export enum`이 포함된 `.ts` 파일과 집계 파일 `ProtoMessageRegister.ts`를 생성합니다. 이 모드에서는 `--namespaceName` 매개변수가 무효합니다. 서버 전용 proto 파일은 자동으로 건너뜁니다.
+`export namespace`, `export class`, `export enum`이 포함된 `.ts` 파일과 집계 파일 `ProtoMessageRegister.ts`를 생성합니다. 서버 전용 proto 파일은 자동으로 건너뜁니다.
 
-**로컬 실행:**
+### 기본 import 경로
 
 ```bash
-dotnet run --project ProtoExport -- \
+dotnet ProtoExport.dll \
   --mode typescript \
-  --inputpath ./Protobuf \
-  --outputpath ./Laya/src/gameframex/protobuf
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Laya/src/gameframex/protobuf \
+  --isGenerateErrorCode true
+```
+
+### 사용자 지정 import 경로
+
+```bash
+dotnet ProtoExport.dll \
+  --mode typescript \
+  --importPath "./lib/network/" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../CocosCreator/assets/scripts/protobuf \
+  --isGenerateErrorCode true
 ```
 
 **Docker 실행:**
@@ -229,44 +276,56 @@ docker run --rm \
   -v ./Protobuf:/protos \
   -v ./Laya/src/gameframex/protobuf:/output \
   gameframex/gameframex-tools:latest \
-  --mode typescript --inputpath /protos --outputpath /output
+  --mode typescript --inputPath /protos --outputPath /output
 ```
 
-### Godot 모드
-
-고정적으로 `GameFrameX.Network.Runtime` 네임스페이스를 사용하는 C# 코드를 생성합니다 (`--namespaceName` 매개변수는 무시됩니다). 서버 전용 proto 파일은 자동으로 건너뜁니다.
-
-**로컬 실행:**
+## C++ 모드 (개발 중)
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode godot \
-  --inputpath ./Protobuf \
-  --outputpath ./Godot/Proto
+dotnet ProtoExport.dll \
+  --mode cpp \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Unreal/Source/Proto
 ```
 
-**Docker 실행:**
+## Lua 모드 (개발 중)
 
 ```bash
-docker run --rm \
-  -v ./Protobuf:/protos \
-  -v ./Godot/Proto:/output \
-  gameframex/gameframex-tools:latest \
-  --mode godot --inputpath /protos --outputpath /output
+dotnet ProtoExport.dll \
+  --mode lua \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Defold/scripts/protobuf
 ```
 
-## Docker 경로 매핑
+---
+
+# 빠른 내보내기 스크립트
+
+`Protobuf/` 디렉토리에 사전 설정된 내보내기 스크립트가 제공됩니다:
+
+| 스크립트 | 설명 |
+|---------|------|
+| `Proto2CsExport_Server.sh/.bat` | C# 서버용 코드 내보내기 |
+| `Proto2CsExport_Client.sh/.bat` | C# Unity 클라이언트용 코드 내보내기 |
+| `Proto2TsExport.sh/.bat` | TypeScript 코드 내보내기 |
+
+---
+
+# Docker 경로 매핑
 
 Docker 사용 시 경로 매핑 규칙은 다음과 같습니다:
 
 - `-v <호스트 경로>:<컨테이너 경로>` 로 호스트 디렉토리를 컨테이너에 마운트합니다
-- `--inputpath` 와 `--outputpath` 에는 **컨테이너 내부 경로** (예: `/protos`, `/output`)를 지정해야 합니다 (호스트 경로가 아님)
+- `--inputPath` 와 `--outputPath` 에는 **컨테이너 내부 경로** (예: `/protos`, `/output`)를 지정해야 합니다 (호스트 경로가 아님)
 
 ```bash
 # 예시: 호스트 ./my-protos -> 컨테이너 /protos
 docker run --rm \
-  -v $(pwd)/my-protos:/protos \     # 호스트 경로 : 컨테이너 경로
-  -v $(pwd)/my-output:/output \     # 호스트 경로 : 컨테이너 경로
+  -v $(pwd)/my-protos:/protos \
+  -v $(pwd)/my-output:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```

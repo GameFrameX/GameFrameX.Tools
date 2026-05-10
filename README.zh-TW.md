@@ -22,7 +22,7 @@
 
 # ProtoExport 工具
 
-這是一個用於將Proto協議文件轉換為 `Server/Unity/TypeScript/Godot` 程式碼的工具。
+按語言匯出的 Proto 協議程式碼生成工具。支援 C#、TypeScript，C++ 和 Lua 正在開發中。
 
 # Docker
 
@@ -47,7 +47,7 @@ docker run --rm \
   -v /path/to/protos:/protos \
   -v /path/to/output:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" --isGenerateDescription true --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
 # Proto 協議規範
@@ -136,43 +136,71 @@ message PlayerInfo
 
 ---
 
-# 參數解析
+# 參數說明
 
-以下是此工具命令列參數的詳細說明：
+## 核心參數
 
-`--mode`
-此參數用於指定執行模式。有效值包括 `Server`, `Unity`, `TypeScript`, 或 `Godot` 中的任何一個。
+| 參數 | 必填 | 預設值 | 說明 |
+|------|------|--------|------|
+| `--mode` | 是 | - | 語言模式：`csharp`、`typescript`、`cpp`、`lua` |
+| `--inputPath` | 是 | - | `.proto` 協議檔案目錄路徑 |
+| `--outputPath` | 是 | - | 生成檔案的輸出路徑 |
+| `--namespaceName` | 否 | `""` | 生成程式碼的命名空間（僅 C# 有效，TypeScript 忽略） |
+| `--isGenerateErrorCode` | 否 | `true` | 是否在回應訊息中自動生成 `ErrorCode` 欄位 |
 
-`--inputpath`
-此參數用於指定.proto協議檔案的路徑。程式將掃描該路徑下所有以.proto結尾的檔案。
+## C# 專屬參數
 
-`--outputpath`
-此參數用於指定輸出檔案的儲存路徑。
+| 參數 | 必填 | 預設值 | 說明 |
+|------|------|--------|------|
+| `--usingStatements` | 否 | `""` | using 語句，使用 `\|` 分隔（如 `"using System\|using ProtoBuf\|using System.Collections.Generic"`） |
+| `--isGenerateDescription` | 否 | `false` | 是否生成 `[System.ComponentModel.Description]` 特性 |
+| `--isServer` | 否 | `false` | 是否包含伺服器端專屬 proto 檔案（以 `-s` 或 `_s` 結尾的檔案） |
 
-`--namespaceName`
-此參數用於指定命名空間。在TypeScript模式中此參數無效。在Godot模式中，生成的程式碼始終使用 `GameFrameX.Network.Runtime` 命名空間。如果不想設定命名空間，此參數可以傳空值。
+## TypeScript 專屬參數
 
-## 模式詳情與範例
+| 參數 | 必填 | 預設值 | 說明 |
+|------|------|--------|------|
+| `--importPath` | 否 | `"../network/"` | 生成 import 語句的路徑前綴 |
+| `--isGenerateDescription` | 否 | `false` | 是否生成 JSDoc 風格註解 |
 
-| 模式 | 輸出語言 | 命名空間行為 | 服務端專屬 Proto |
-|------|---------|-------------|-----------------|
-| `Server` | C# | 使用 `--namespaceName` 的值 | 包含 |
-| `Unity` | C# | 使用 `--namespaceName` 的值 | 跳過（以 `-s` 或 `_s` 結尾的檔案） |
-| `TypeScript` | TypeScript (.ts) | `--namespaceName` 無效 | 跳過（以 `-s` 或 `_s` 結尾的檔案） |
-| `Godot` | C# | 固定使用 `GameFrameX.Network.Runtime` | 跳過（以 `-s` 或 `_s` 結尾的檔案） |
+## 其他參數
 
-### Server 模式
+| 參數 | 必填 | 預設值 | 說明 |
+|------|------|--------|------|
+| `--isGenerateErrorCodeExcelFile` | 否 | `true` | 是否生成錯誤碼 Excel 檔案 |
+| `--errorCodeExcelFilePath` | 否 | `""` | 錯誤碼 Excel 檔案的自訂路徑 |
 
-生成帶有 `[System.ComponentModel.Description]` 特性的 C# 程式碼，包含服務端專屬 proto 檔案。
+---
+
+# 模式詳情與範例
+
+| 模式 | 輸出語言 | 檔案副檔名 | 說明 |
+|------|---------|-----------|------|
+| `csharp` | C# | `.cs` | 適用於 Server、Unity、Godot、Stride、Flax 等 |
+| `typescript` | TypeScript | `.ts` | 適用於 LayaAir、Cocos Creator、Phaser 等 |
+| `cpp` | C++ | `.h`/`.cpp` | 適用於 Unreal Engine 等（尚未實現） |
+| `lua` | Lua | `.lua` | 適用於 Defold、Solar2D 等（尚未實現） |
+
+## C# 模式
+
+生成帶有 `[ProtoContract]` / `[ProtoMember]` 特性的 C# 程式碼。所有行為透過 CLI 參數控制，無硬編碼的引擎特定邏輯。
+
+### 伺服器端匯出
+
+生成帶有伺服器端 using 語句、`[Description]` 特性的程式碼，包含伺服器端專屬 proto 檔案。
 
 **本機執行：**
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode server \
-  --inputpath ./Protobuf \
-  --outputpath ./Server/GameFrameX.Proto/Proto \
-  --namespaceName GameFrameX.Proto.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Server/GameFrameX.Proto/Proto \
+  --namespaceName GameFrameX.Proto.Proto \
+  --isGenerateErrorCode true
 ```
 
 **Docker 執行：**
@@ -182,44 +210,63 @@ docker run --rm \
   -v ./Protobuf:/protos \
   -v ./Server/GameFrameX.Proto/Proto:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
-### Unity 模式
+### Unity 匯出
 
-生成使用 `GameFrameX.Network.Runtime` 命名空間的 C# 程式碼（不含 `[Description]` 特性），自動跳過服務端專屬 proto 檔案。
-
-**本機執行：**
+生成帶有 Unity using 語句的程式碼，自動跳過伺服器端專屬 proto 檔案。
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode unity \
-  --inputpath ./Protobuf \
-  --outputpath ./Unity/Assets/Hotfix/Proto \
-  --namespaceName Hotfix.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Unity/Assets/Hotfix/Proto \
+  --namespaceName Hotfix.Proto \
+  --isGenerateErrorCode true
 ```
 
-**Docker 執行：**
+### Godot 匯出
+
+與 Unity 類似，使用 Godot 特定的命名空間。
 
 ```bash
-docker run --rm \
-  -v ./Protobuf:/protos \
-  -v ./Unity/Assets/Hotfix/Proto:/output \
-  gameframex/gameframex-tools:latest \
-  --mode unity --inputpath /protos --outputpath /output --namespaceName Hotfix.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Godot/Proto \
+  --namespaceName Proto \
+  --isGenerateErrorCode true
 ```
 
-### TypeScript 模式
+## TypeScript 模式
 
-生成包含 `export namespace`、`export class` 和 `export enum` 的 `.ts` 檔案，並生成聚合檔案 `ProtoMessageRegister.ts`。`--namespaceName` 參數在此模式下無效。自動跳過服務端專屬 proto 檔案。
+生成包含 `export namespace`、`export class` 和 `export enum` 的 `.ts` 檔案，並生成聚合檔案 `ProtoMessageRegister.ts`。自動跳過伺服器端專屬 proto 檔案。
 
-**本機執行：**
+### 預設 import 路徑
 
 ```bash
-dotnet run --project ProtoExport -- \
+dotnet ProtoExport.dll \
   --mode typescript \
-  --inputpath ./Protobuf \
-  --outputpath ./Laya/src/gameframex/protobuf
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Laya/src/gameframex/protobuf \
+  --isGenerateErrorCode true
+```
+
+### 自訂 import 路徑
+
+```bash
+dotnet ProtoExport.dll \
+  --mode typescript \
+  --importPath "./lib/network/" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../CocosCreator/assets/scripts/protobuf \
+  --isGenerateErrorCode true
 ```
 
 **Docker 執行：**
@@ -229,44 +276,56 @@ docker run --rm \
   -v ./Protobuf:/protos \
   -v ./Laya/src/gameframex/protobuf:/output \
   gameframex/gameframex-tools:latest \
-  --mode typescript --inputpath /protos --outputpath /output
+  --mode typescript --inputPath /protos --outputPath /output
 ```
 
-### Godot 模式
-
-生成固定使用 `GameFrameX.Network.Runtime` 命名空間的 C# 程式碼（`--namespaceName` 參數會被忽略）。自動跳過服務端專屬 proto 檔案。
-
-**本機執行：**
+## C++ 模式（開發中）
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode godot \
-  --inputpath ./Protobuf \
-  --outputpath ./Godot/Proto
+dotnet ProtoExport.dll \
+  --mode cpp \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Unreal/Source/Proto
 ```
 
-**Docker 執行：**
+## Lua 模式（開發中）
 
 ```bash
-docker run --rm \
-  -v ./Protobuf:/protos \
-  -v ./Godot/Proto:/output \
-  gameframex/gameframex-tools:latest \
-  --mode godot --inputpath /protos --outputpath /output
+dotnet ProtoExport.dll \
+  --mode lua \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Defold/scripts/protobuf
 ```
 
-## Docker 路徑映射說明
+---
+
+# 快捷匯出腳本
+
+`Protobuf/` 目錄下提供了預設的匯出腳本：
+
+| 腳本 | 說明 |
+|------|------|
+| `Proto2CsExport_Server.sh/.bat` | 匯出 C# 伺服器端程式碼 |
+| `Proto2CsExport_Client.sh/.bat` | 匯出 C# Unity 用戶端程式碼 |
+| `Proto2TsExport.sh/.bat` | 匯出 TypeScript 程式碼 |
+
+---
+
+# Docker 路徑映射說明
 
 使用 Docker 時，路徑映射規則如下：
 
 - `-v <宿主機路徑>:<容器內路徑>` 將宿主機目錄掛載到容器中
-- `--inputpath` 和 `--outputpath` 必須填寫**容器內路徑**（如 `/protos`、`/output`），而非宿主機路徑
+- `--inputPath` 和 `--outputPath` 必須填寫**容器內路徑**（如 `/protos`、`/output`），而非宿主機路徑
 
 ```bash
 # 範例：宿主機 ./my-protos -> 容器內 /protos
 docker run --rm \
-  -v $(pwd)/my-protos:/protos \    # 宿主機路徑 : 容器內路徑
-  -v $(pwd)/my-output:/output \    # 宿主機路徑 : 容器內路徑
+  -v $(pwd)/my-protos:/protos \
+  -v $(pwd)/my-output:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
