@@ -45,4 +45,10 @@ public sealed class LauncherOptions
     /// </summary>
     [Option("errorCodeExcelFilePath", Required = false, Description = "错误码Excel文件路径")]
     public string ErrorCodeExcelFilePath { get; set; }
+
+    /// <summary>
+    /// 目标平台 (server, unity, godot, layaair, cocos, unreal 等)
+    /// </summary>
+    [Option("target", Required = false, DefaultValue = "", Description = "目标平台")]
+    public string Target { get; set; }
 }

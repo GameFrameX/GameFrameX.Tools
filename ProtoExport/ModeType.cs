@@ -1,24 +1,24 @@
-﻿namespace GameFrameX.ProtoExport;
+namespace GameFrameX.ProtoExport;
 
 public enum ModeType
 {
     /// <summary>
-    /// 服务器
+    /// C# 语言（Server, Unity, Godot, Stride, Flax 等）
     /// </summary>
-    Server,
+    CSharp,
 
     /// <summary>
-    /// Unity
-    /// </summary>
-    Unity,
-
-    /// <summary>
-    /// TS.
+    /// TypeScript 语言（LayaAir, Cocos Creator, Phaser 等）
     /// </summary>
     TypeScript,
 
     /// <summary>
-    /// Godot
+    /// C++ 语言（Unreal Engine 等）
     /// </summary>
-    Godot
+    Cpp,
+
+    /// <summary>
+    /// Lua 语言（Defold, Solar2D, Dora SSR 等）
+    /// </summary>
+    Lua
 }
