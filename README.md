@@ -22,7 +22,7 @@
 
 # ProtoExport Tool
 
-A tool for converting Proto protocol files into `Server/Unity/TypeScript/Godot` code.
+A language-oriented tool for converting Proto protocol files into multi-language code. Supports C#, TypeScript, C++ (planned), and Lua (planned).
 
 # Docker
 
@@ -47,7 +47,7 @@ docker run --rm \
   -v /path/to/protos:/protos \
   -v /path/to/output:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" --isGenerateDescription true --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
 # Proto Protocol Specification
@@ -138,41 +138,69 @@ The [TestProtos/](TestProtos/) directory contains example proto files covering a
 
 # Parameter Reference
 
-Below is a detailed description of the command-line parameters for this tool.
+## Core Parameters
 
-`--mode`
-This parameter specifies the run mode. Valid values include `Server`, `Unity`, `TypeScript`, or `Godot`.
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `--mode` | Yes | - | Language mode: `csharp`, `typescript`, `cpp`, `lua` |
+| `--inputPath` | Yes | - | Path to the `.proto` files directory |
+| `--outputPath` | Yes | - | Output path for generated files |
+| `--namespaceName` | No | `""` | Namespace for generated code (C# only, ignored by TypeScript) |
+| `--isGenerateErrorCode` | No | `true` | Whether to auto-generate `ErrorCode` field in response messages |
 
-`--inputpath`
-This parameter specifies the path to the .proto protocol files. The program will scan all files ending with .proto under the specified path.
+## C# Parameters
 
-`--outputpath`
-This parameter specifies the output path for the generated files.
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `--usingStatements` | No | `""` | Using statements separated by `\|` (e.g., `"using System\|using ProtoBuf\|using System.Collections.Generic"`) |
+| `--isGenerateDescription` | No | `false` | Whether to generate `[System.ComponentModel.Description]` attributes |
+| `--isServer` | No | `false` | Whether to include server-only proto files (files ending with `-s` or `_s`) |
 
-`--namespaceName`
-This parameter specifies the namespace. This parameter has no effect in TypeScript mode. In Godot mode, the generated code always uses `GameFrameX.Network.Runtime` namespace. If you do not want to set a namespace, pass an empty value.
+## TypeScript Parameters
 
-## Mode Details and Examples
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `--importPath` | No | `"../network/"` | Import path prefix for generated import statements |
+| `--isGenerateDescription` | No | `false` | Whether to generate JSDoc-style comments |
 
-| Mode | Output Language | Namespace Behavior | Server-only Protos |
-|------|----------------|-------------------|--------------------|
-| `Server` | C# | Uses `--namespaceName` value | Included |
-| `Unity` | C# | Uses `--namespaceName` value | Skipped (files ending with `-s` or `_s`) |
-| `TypeScript` | TypeScript (.ts) | `--namespaceName` has no effect | Skipped (files ending with `-s` or `_s`) |
-| `Godot` | C# | Always uses `GameFrameX.Network.Runtime` | Skipped (files ending with `-s` or `_s`) |
+## Legacy Parameters
 
-### Server Mode
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `--isGenerateErrorCodeExcelFile` | No | `true` | Whether to generate error code Excel file |
+| `--errorCodeExcelFilePath` | No | `""` | Custom path for error code Excel file |
 
-Generates C# code with `[System.ComponentModel.Description]` attributes. Server-only proto files are included.
+---
+
+# Mode Details and Examples
+
+| Mode | Output Language | File Extension | Description |
+|------|----------------|----------------|-------------|
+| `csharp` | C# | `.cs` | For Server, Unity, Godot, Stride, Flax, etc. |
+| `typescript` | TypeScript | `.ts` | For LayaAir, Cocos Creator, Phaser, etc. |
+| `cpp` | C++ | `.h`/`.cpp` | For Unreal Engine, etc. (not yet implemented) |
+| `lua` | Lua | `.lua` | For Defold, Solar2D, etc. (not yet implemented) |
+
+## C# Mode
+
+Generates C# code with `[ProtoContract]` / `[ProtoMember]` attributes. All behavior is controlled via CLI parameters — no hardcoded engine-specific logic.
+
+### Server Export
+
+Generates code with server-specific using statements, `[Description]` attributes, and includes server-only proto files.
 
 **Local:**
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode server \
-  --inputpath ./Protobuf \
-  --outputpath ./Server/GameFrameX.Proto/Proto \
-  --namespaceName GameFrameX.Proto.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Server/GameFrameX.Proto/Proto \
+  --namespaceName GameFrameX.Proto.Proto \
+  --isGenerateErrorCode true
 ```
 
 **Docker:**
@@ -182,44 +210,63 @@ docker run --rm \
   -v ./Protobuf:/protos \
   -v ./Server/GameFrameX.Proto/Proto:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
 
-### Unity Mode
+### Unity Export
 
-Generates C# code using the `GameFrameX.Network.Runtime` namespace (without `[Description]` attributes). Server-only proto files are automatically skipped.
-
-**Local:**
+Generates code with Unity-specific using statements. Server-only proto files are automatically skipped.
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode unity \
-  --inputpath ./Protobuf \
-  --outputpath ./Unity/Assets/Hotfix/Proto \
-  --namespaceName Hotfix.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Unity/Assets/Hotfix/Proto \
+  --namespaceName Hotfix.Proto \
+  --isGenerateErrorCode true
 ```
 
-**Docker:**
+### Godot Export
+
+Same as Unity but with Godot-specific namespace.
 
 ```bash
-docker run --rm \
-  -v ./Protobuf:/protos \
-  -v ./Unity/Assets/Hotfix/Proto:/output \
-  gameframex/gameframex-tools:latest \
-  --mode unity --inputpath /protos --outputpath /output --namespaceName Hotfix.Proto
+dotnet ProtoExport.dll \
+  --mode csharp \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.Network.Runtime" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Godot/Proto \
+  --namespaceName Proto \
+  --isGenerateErrorCode true
 ```
 
-### TypeScript Mode
+## TypeScript Mode
 
-Generates `.ts` files with `export namespace`, `export class`, and `export enum`, plus an aggregated `ProtoMessageRegister.ts` file. The `--namespaceName` parameter has no effect in this mode. Server-only proto files are automatically skipped.
+Generates `.ts` files with `export namespace`, `export class`, and `export enum`, plus an aggregated `ProtoMessageRegister.ts` file. Server-only proto files are automatically skipped.
 
-**Local:**
+### Default Import Path
 
 ```bash
-dotnet run --project ProtoExport -- \
+dotnet ProtoExport.dll \
   --mode typescript \
-  --inputpath ./Protobuf \
-  --outputpath ./Laya/src/gameframex/protobuf
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Laya/src/gameframex/protobuf \
+  --isGenerateErrorCode true
+```
+
+### Custom Import Path
+
+```bash
+dotnet ProtoExport.dll \
+  --mode typescript \
+  --importPath "./lib/network/" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../CocosCreator/assets/scripts/protobuf \
+  --isGenerateErrorCode true
 ```
 
 **Docker:**
@@ -229,44 +276,56 @@ docker run --rm \
   -v ./Protobuf:/protos \
   -v ./Laya/src/gameframex/protobuf:/output \
   gameframex/gameframex-tools:latest \
-  --mode typescript --inputpath /protos --outputpath /output
+  --mode typescript --inputPath /protos --outputPath /output
 ```
 
-### Godot Mode
-
-Generates C# code with the fixed `GameFrameX.Network.Runtime` namespace (the `--namespaceName` parameter is ignored). Server-only proto files are automatically skipped.
-
-**Local:**
+## C++ Mode (Planned)
 
 ```bash
-dotnet run --project ProtoExport -- \
-  --mode godot \
-  --inputpath ./Protobuf \
-  --outputpath ./Godot/Proto
+dotnet ProtoExport.dll \
+  --mode cpp \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Unreal/Source/Proto
 ```
 
-**Docker:**
+## Lua Mode (Planned)
 
 ```bash
-docker run --rm \
-  -v ./Protobuf:/protos \
-  -v ./Godot/Proto:/output \
-  gameframex/gameframex-tools:latest \
-  --mode godot --inputpath /protos --outputpath /output
+dotnet ProtoExport.dll \
+  --mode lua \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../Defold/scripts/protobuf
 ```
 
-## Docker Path Mapping
+---
+
+# Quick Export Scripts
+
+Pre-built scripts are available in the `Protobuf/` directory:
+
+| Script | Description |
+|--------|-------------|
+| `Proto2CsExport_Server.sh/.bat` | Export C# for Server |
+| `Proto2CsExport_Client.sh/.bat` | Export C# for Unity Client |
+| `Proto2TsExport.sh/.bat` | Export TypeScript |
+
+---
+
+# Docker Path Mapping
 
 When using Docker, paths are mapped as follows:
 
 - `-v <host-path>:<container-path>` mounts a host directory into the container
-- `--inputpath` and `--outputpath` must reference the **container-side** paths (e.g. `/protos`, `/output`), not the host paths
+- `--inputPath` and `--outputPath` must reference the **container-side** paths (e.g. `/protos`, `/output`), not the host paths
 
 ```bash
 # Example: host ./my-protos -> container /protos
 docker run --rm \
-  -v $(pwd)/my-protos:/protos \   # host path : container path
-  -v $(pwd)/my-output:/output \   # host path : container path
+  -v $(pwd)/my-protos:/protos \
+  -v $(pwd)/my-output:/output \
   gameframex/gameframex-tools:latest \
-  --mode server --inputpath /protos --outputpath /output --namespaceName GameFrameX.Proto.Proto
+  --mode csharp --isServer true \
+  --usingStatements "using System|using ProtoBuf|using System.Collections.Generic|using GameFrameX.NetWork.Abstractions|using GameFrameX.NetWork.Messages" \
+  --isGenerateDescription true \
+  --inputPath /protos --outputPath /output --namespaceName GameFrameX.Proto.Proto
 ```
