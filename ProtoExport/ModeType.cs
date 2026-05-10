@@ -20,5 +20,10 @@ public enum ModeType
     /// <summary>
     /// Lua 语言（Defold, Solar2D, Dora SSR 等）
     /// </summary>
-    Lua
+    Lua,
+
+    /// <summary>
+    /// Go 语言（Go 游戏服务器等）
+    /// </summary>
+    Go
 }
