@@ -178,8 +178,9 @@ message PlayerInfo
 |--------|---------|--------------|------|
 | `csharp` | C# | `.cs` | Server、Unity、Godot、Stride、Flax などに対応 |
 | `typescript` | TypeScript | `.ts` | LayaAir、Cocos Creator、Phaser などに対応 |
-| `cpp` | C++ | `.h`/`.cpp` | Unreal Engine などに対応（未実装） |
-| `lua` | Lua | `.lua` | Defold、Solar2D などに対応（未実装） |
+| `cpp` | C++ | `.h` | Unreal Engine などに対応 |
+| `lua` | Lua | `.lua` | Defold、Solar2D、Dora SSR などに対応 |
+| `go` | Go | `.go` | Go ゲームサーバーなどに対応 |
 
 ## C# モード
 
@@ -279,22 +280,62 @@ docker run --rm \
   --mode typescript --inputPath /protos --outputPath /output
 ```
 
-## C++ モード（開発中）
+## C++ モード
+
+`#pragma once`、名前空間、`enum class`、クラス定義を含む C++ ヘッダファイルを生成します。`MessageObject` を継承するクラスには `MESSAGE_ID` と `Clear()` メソッドが含まれます。
 
 ```bash
 dotnet ProtoExport.dll \
   --mode cpp \
+  --usingStatements "#include <cstdint>|#include <string>|#include <vector>|#include <unordered_map>" \
   --inputPath ./../../../../../Protobuf \
-  --outputPath ./../../../../../Unreal/Source/Proto
+  --outputPath ./../../../../../Unreal/Source/Proto \
+  --namespaceName GameFrameX.Proto
 ```
 
-## Lua モード（開発中）
+## Lua モード
+
+LuaDoc（EmmyLua）スタイルの型アノテーションとモジュールベースのメッセージ定義を含む `.lua` ファイルを生成します。集約ファイル `ProtoMessageRegister.lua` も生成されます。
 
 ```bash
 dotnet ProtoExport.dll \
   --mode lua \
+  --importPath "./network/" \
   --inputPath ./../../../../../Protobuf \
   --outputPath ./../../../../../Defold/scripts/protobuf
+```
+
+**Docker 実行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Defold/scripts/protobuf:/output \
+  gameframex/gameframex-tools:latest \
+  --mode lua --importPath "./network/" --inputPath /protos --outputPath /output
+```
+
+## Go モード
+
+protobuf タグ付きの Go struct 定義、enum 型定義、集約ファイル `message_register.go` を生成します。`--namespaceName` は Go パッケージ名として使用されます（ドット区切りの場合は最後のセグメント）。
+
+```bash
+dotnet ProtoExport.dll \
+  --mode go \
+  --usingStatements "google.golang.org/protobuf/runtime/protoimpl" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../GoServer/proto \
+  --namespaceName proto
+```
+
+**Docker 実行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./GoServer/proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode go --inputPath /protos --outputPath /output --namespaceName proto
 ```
 
 ---
@@ -308,6 +349,7 @@ dotnet ProtoExport.dll \
 | `Proto2CsExport_Server.sh/.bat` | C# サーバー用コードのエクスポート |
 | `Proto2CsExport_Client.sh/.bat` | C# Unity クライアント用コードのエクスポート |
 | `Proto2TsExport.sh/.bat` | TypeScript コードのエクスポート |
+| `Proto2GoExport.sh/.bat` | Go コードのエクスポート |
 
 ---
 

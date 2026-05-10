@@ -178,8 +178,9 @@ message PlayerInfo
 |------|---------|-----------|------|
 | `csharp` | C# | `.cs` | 适用于 Server、Unity、Godot、Stride、Flax 等 |
 | `typescript` | TypeScript | `.ts` | 适用于 LayaAir、Cocos Creator、Phaser 等 |
-| `cpp` | C++ | `.h`/`.cpp` | 适用于 Unreal Engine 等（尚未实现） |
-| `lua` | Lua | `.lua` | 适用于 Defold、Solar2D 等（尚未实现） |
+| `cpp` | C++ | `.h` | 适用于 Unreal Engine 等 |
+| `lua` | Lua | `.lua` | 适用于 Defold、Solar2D、Dora SSR 等 |
+| `go` | Go | `.go` | 适用于 Go 游戏服务器等 |
 
 ## C# 模式
 
@@ -279,22 +280,62 @@ docker run --rm \
   --mode typescript --inputPath /protos --outputPath /output
 ```
 
-## C++ 模式（开发中）
+## C++ 模式
+
+生成带有 `#pragma once`、命名空间、`enum class` 和类定义的 C++ 头文件。继承 `MessageObject` 的类包含 `MESSAGE_ID` 和 `Clear()` 方法。
 
 ```bash
 dotnet ProtoExport.dll \
   --mode cpp \
+  --usingStatements "#include <cstdint>|#include <string>|#include <vector>|#include <unordered_map>" \
   --inputPath ./../../../../../Protobuf \
-  --outputPath ./../../../../../Unreal/Source/Proto
+  --outputPath ./../../../../../Unreal/Source/Proto \
+  --namespaceName GameFrameX.Proto
 ```
 
-## Lua 模式（开发中）
+## Lua 模式
+
+生成带有 LuaDoc（EmmyLua）类型注解和模块化消息定义的 `.lua` 文件，同时生成聚合文件 `ProtoMessageRegister.lua`。
 
 ```bash
 dotnet ProtoExport.dll \
   --mode lua \
+  --importPath "./network/" \
   --inputPath ./../../../../../Protobuf \
   --outputPath ./../../../../../Defold/scripts/protobuf
+```
+
+**Docker 运行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Defold/scripts/protobuf:/output \
+  gameframex/gameframex-tools:latest \
+  --mode lua --importPath "./network/" --inputPath /protos --outputPath /output
+```
+
+## Go 模式
+
+生成带有 protobuf 标签的 Go struct 定义、枚举类型定义，以及聚合文件 `message_register.go`。使用 `--namespaceName` 作为 Go 包名（点分隔时取最后一段）。
+
+```bash
+dotnet ProtoExport.dll \
+  --mode go \
+  --usingStatements "google.golang.org/protobuf/runtime/protoimpl" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../GoServer/proto \
+  --namespaceName proto
+```
+
+**Docker 运行：**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./GoServer/proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode go --inputPath /protos --outputPath /output --namespaceName proto
 ```
 
 ---
@@ -308,6 +349,7 @@ dotnet ProtoExport.dll \
 | `Proto2CsExport_Server.sh/.bat` | 导出 C# 服务端代码 |
 | `Proto2CsExport_Client.sh/.bat` | 导出 C# Unity 客户端代码 |
 | `Proto2TsExport.sh/.bat` | 导出 TypeScript 代码 |
+| `Proto2GoExport.sh/.bat` | 导出 Go 代码 |
 
 ---
 

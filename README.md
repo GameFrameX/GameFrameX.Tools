@@ -178,8 +178,9 @@ The [TestProtos/](TestProtos/) directory contains example proto files covering a
 |------|----------------|----------------|-------------|
 | `csharp` | C# | `.cs` | For Server, Unity, Godot, Stride, Flax, etc. |
 | `typescript` | TypeScript | `.ts` | For LayaAir, Cocos Creator, Phaser, etc. |
-| `cpp` | C++ | `.h`/`.cpp` | For Unreal Engine, etc. (not yet implemented) |
-| `lua` | Lua | `.lua` | For Defold, Solar2D, etc. (not yet implemented) |
+| `cpp` | C++ | `.h` | For Unreal Engine, etc. |
+| `lua` | Lua | `.lua` | For Defold, Solar2D, Dora SSR, etc. |
+| `go` | Go | `.go` | For Go game servers, etc. |
 
 ## C# Mode
 
@@ -279,22 +280,62 @@ docker run --rm \
   --mode typescript --inputPath /protos --outputPath /output
 ```
 
-## C++ Mode (Planned)
+## C++ Mode
+
+Generates C++ header files with `#pragma once`, namespace, `enum class`, and class definitions. Classes with `MessageObject` base include `MESSAGE_ID` and `Clear()` method.
 
 ```bash
 dotnet ProtoExport.dll \
   --mode cpp \
+  --usingStatements "#include <cstdint>|#include <string>|#include <vector>|#include <unordered_map>" \
   --inputPath ./../../../../../Protobuf \
-  --outputPath ./../../../../../Unreal/Source/Proto
+  --outputPath ./../../../../../Unreal/Source/Proto \
+  --namespaceName GameFrameX.Proto
 ```
 
-## Lua Mode (Planned)
+## Lua Mode
+
+Generates `.lua` files with LuaDoc (EmmyLua) type annotations and module-based message definitions. Includes a `ProtoMessageRegister.lua` aggregate file.
 
 ```bash
 dotnet ProtoExport.dll \
   --mode lua \
+  --importPath "./network/" \
   --inputPath ./../../../../../Protobuf \
   --outputPath ./../../../../../Defold/scripts/protobuf
+```
+
+**Docker:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Defold/scripts/protobuf:/output \
+  gameframex/gameframex-tools:latest \
+  --mode lua --importPath "./network/" --inputPath /protos --outputPath /output
+```
+
+## Go Mode
+
+Generates Go struct definitions with protobuf tags, enum type definitions, and a `message_register.go` aggregate file. Uses `--namespaceName` as the Go package name (last segment if dot-separated).
+
+```bash
+dotnet ProtoExport.dll \
+  --mode go \
+  --usingStatements "google.golang.org/protobuf/runtime/protoimpl" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../GoServer/proto \
+  --namespaceName proto
+```
+
+**Docker:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./GoServer/proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode go --inputPath /protos --outputPath /output --namespaceName proto
 ```
 
 ---
@@ -308,6 +349,7 @@ Pre-built scripts are available in the `Protobuf/` directory:
 | `Proto2CsExport_Server.sh/.bat` | Export C# for Server |
 | `Proto2CsExport_Client.sh/.bat` | Export C# for Unity Client |
 | `Proto2TsExport.sh/.bat` | Export TypeScript |
+| `Proto2GoExport.sh/.bat` | Export Go |
 
 ---
 

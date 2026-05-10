@@ -178,8 +178,9 @@ message PlayerInfo
 |------|----------|------------|------|
 | `csharp` | C# | `.cs` | Server, Unity, Godot, Stride, Flax 등에 적용 |
 | `typescript` | TypeScript | `.ts` | LayaAir, Cocos Creator, Phaser 등에 적용 |
-| `cpp` | C++ | `.h`/`.cpp` | Unreal Engine 등에 적용 (미구현) |
-| `lua` | Lua | `.lua` | Defold, Solar2D 등에 적용 (미구현) |
+| `cpp` | C++ | `.h` | Unreal Engine 등에 적용 |
+| `lua` | Lua | `.lua` | Defold, Solar2D, Dora SSR 등에 적용 |
+| `go` | Go | `.go` | Go 게임 서버 등에 적용 |
 
 ## C# 모드
 
@@ -279,22 +280,62 @@ docker run --rm \
   --mode typescript --inputPath /protos --outputPath /output
 ```
 
-## C++ 모드 (개발 중)
+## C++ 모드
+
+`#pragma once`, 네임스페이스, `enum class`, 클래스 정의가 포함된 C++ 헤더 파일을 생성합니다. `MessageObject`를 상속하는 클래스에는 `MESSAGE_ID`와 `Clear()` 메서드가 포함됩니다.
 
 ```bash
 dotnet ProtoExport.dll \
   --mode cpp \
+  --usingStatements "#include <cstdint>|#include <string>|#include <vector>|#include <unordered_map>" \
   --inputPath ./../../../../../Protobuf \
-  --outputPath ./../../../../../Unreal/Source/Proto
+  --outputPath ./../../../../../Unreal/Source/Proto \
+  --namespaceName GameFrameX.Proto
 ```
 
-## Lua 모드 (개발 중)
+## Lua 모드
+
+LuaDoc (EmmyLua) 스타일 타입 어노테이션과 모듈 기반 메시지 정의가 포함된 `.lua` 파일을 생성합니다. 집계 파일 `ProtoMessageRegister.lua`도 함께 생성됩니다.
 
 ```bash
 dotnet ProtoExport.dll \
   --mode lua \
+  --importPath "./network/" \
   --inputPath ./../../../../../Protobuf \
   --outputPath ./../../../../../Defold/scripts/protobuf
+```
+
+**Docker 실행:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./Defold/scripts/protobuf:/output \
+  gameframex/gameframex-tools:latest \
+  --mode lua --importPath "./network/" --inputPath /protos --outputPath /output
+```
+
+## Go 모드
+
+protobuf 태그가 포함된 Go struct 정의, enum 타입 정의, 집계 파일 `message_register.go`를 생성합니다. `--namespaceName`은 Go 패키지 이름으로 사용됩니다 (점으로 구분된 경우 마지막 세그먼트).
+
+```bash
+dotnet ProtoExport.dll \
+  --mode go \
+  --usingStatements "google.golang.org/protobuf/runtime/protoimpl" \
+  --inputPath ./../../../../../Protobuf \
+  --outputPath ./../../../../../GoServer/proto \
+  --namespaceName proto
+```
+
+**Docker 실행:**
+
+```bash
+docker run --rm \
+  -v ./Protobuf:/protos \
+  -v ./GoServer/proto:/output \
+  gameframex/gameframex-tools:latest \
+  --mode go --inputPath /protos --outputPath /output --namespaceName proto
 ```
 
 ---
@@ -308,6 +349,7 @@ dotnet ProtoExport.dll \
 | `Proto2CsExport_Server.sh/.bat` | C# 서버용 코드 내보내기 |
 | `Proto2CsExport_Client.sh/.bat` | C# Unity 클라이언트용 코드 내보내기 |
 | `Proto2TsExport.sh/.bat` | TypeScript 코드 내보내기 |
+| `Proto2GoExport.sh/.bat` | Go 코드 내보내기 |
 
 ---
 
