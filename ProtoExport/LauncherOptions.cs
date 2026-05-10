@@ -63,4 +63,10 @@ public sealed class LauncherOptions
     /// </summary>
     [Option("isServer", Required = false, DefaultValue = false, Description = "是否为服务器模式")]
     public bool IsServer { get; set; }
+
+    /// <summary>
+    /// TypeScript import 路径前缀
+    /// </summary>
+    [Option("importPath", Required = false, DefaultValue = "../network/", Description = "TypeScript import 路径前缀")]
+    public string ImportPath { get; set; }
 }
