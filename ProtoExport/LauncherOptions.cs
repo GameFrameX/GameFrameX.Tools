@@ -47,8 +47,20 @@ public sealed class LauncherOptions
     public string ErrorCodeExcelFilePath { get; set; }
 
     /// <summary>
-    /// 目标平台 (server, unity, godot, layaair, cocos, unreal 等)
+    /// using 语句，使用 | 分隔
     /// </summary>
-    [Option("target", Required = false, DefaultValue = "", Description = "目标平台")]
-    public string Target { get; set; }
+    [Option("usingStatements", Required = false, DefaultValue = "", Description = "using 语句，使用 | 分隔")]
+    public string UsingStatements { get; set; }
+
+    /// <summary>
+    /// 是否生成 Description 特性
+    /// </summary>
+    [Option("isGenerateDescription", Required = false, DefaultValue = false, Description = "是否生成 Description 特性")]
+    public bool IsGenerateDescription { get; set; }
+
+    /// <summary>
+    /// 是否为服务器模式（包含 _s/-s 后缀的服务器内部协议文件）
+    /// </summary>
+    [Option("isServer", Required = false, DefaultValue = false, Description = "是否为服务器模式")]
+    public bool IsServer { get; set; }
 }
