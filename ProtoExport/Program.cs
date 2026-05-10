@@ -28,7 +28,6 @@ namespace GameFrameX.ProtoExport
             {
                 Console.WriteLine("导出失败,请检查错误信息");
                 Console.WriteLine(e);
-                Console.ReadKey();
                 throw;
             }
 
