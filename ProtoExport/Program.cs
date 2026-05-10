@@ -1,4 +1,4 @@
-﻿using GameFrameX.Foundation.Options;
+using GameFrameX.Foundation.Options;
 
 namespace GameFrameX.ProtoExport
 {

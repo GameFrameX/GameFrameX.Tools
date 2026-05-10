@@ -1,4 +1,4 @@
-﻿namespace GameFrameX.ProtoExport;
+namespace GameFrameX.ProtoExport;
 
 public static class ProtoBufMessageHandler
 {
@@ -27,37 +27,24 @@ public static class ProtoBufMessageHandler
             }
         }
 
+        _protoGenerateHelper?.Init(launcherOptions);
+
         var files = Directory.GetFiles(launcherOptions.InputPath, "*.proto", SearchOption.AllDirectories);
 
         var messageInfoLists = new List<MessageInfoList>(files.Length);
+
         foreach (var file in files)
         {
             var fileName = Path.GetFileNameWithoutExtension(file);
             var operationCodeInfo = MessageHelper.Parse(File.ReadAllText(file), fileName, launcherOptions.OutputPath, launcherOptions.IsGenerateErrorCode);
             messageInfoLists.Add(operationCodeInfo);
 
-            if (modeType != ModeType.Server && (fileName.EndsWith("-s") || fileName.EndsWith("_s")))
+            if (!launcherOptions.IsServer && (fileName.EndsWith("-s") || fileName.EndsWith("_s")))
             {
                 continue;
             }
 
-            switch (modeType)
-            {
-                case ModeType.Server:
-                case ModeType.Unity:
-                case ModeType.Godot:
-                {
-                    _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
-                }
-                    break;
-                case ModeType.TypeScript:
-                {
-                    _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, Path.GetFileNameWithoutExtension(file));
-                }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            _protoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
         }
 
         _protoGenerateHelper?.Post(messageInfoLists, launcherOptions);
