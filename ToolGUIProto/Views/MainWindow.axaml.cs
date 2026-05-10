@@ -50,64 +50,79 @@ public partial class MainWindow : Window
         stringWriter.GetStringBuilder().Clear();
         timer.Start();
 
-        var modeName = this.Mode.SelectionBoxItem?.ToString();
-        var savedOptions = SettingData.GetOptions(modeName);
-        if (savedOptions == null)
+        try
         {
-            Console.WriteLine("不支持的运行模式");
-            return;
+            var modeName = this.Mode.SelectionBoxItem?.ToString();
+            var savedOptions = SettingData.GetOptions(modeName);
+            if (savedOptions == null)
+            {
+                Console.WriteLine("不支持的运行模式");
+                timer.Stop();
+                return;
+            }
+
+            LauncherOptions launcherOptions = new LauncherOptions
+            {
+                Mode = savedOptions.Mode,
+                UsingStatements = savedOptions.UsingStatements,
+                IsGenerateDescription = savedOptions.IsGenerateDescription,
+                IsServer = savedOptions.IsServer,
+                InputPath = this.InputPath.Text,
+                OutputPath = this.OutputPath.Text,
+                NamespaceName = this.NameSpace.Text,
+                IsGenerateErrorCode = Convert.ToBoolean(this.IsGenerateErrorCode.IsChecked),
+            };
+
+            if (!Enum.TryParse<ModeType>(launcherOptions.Mode, true, out var modeType))
+            {
+                Console.WriteLine("不支持的运行模式");
+                timer.Stop();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(launcherOptions.InputPath))
+            {
+                Console.WriteLine("协议文件路径不能为空");
+                timer.Stop();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(launcherOptions.OutputPath))
+            {
+                Console.WriteLine("导出路径不能为空");
+                timer.Stop();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(launcherOptions.NamespaceName))
+            {
+                Console.WriteLine("命名空间不能为空");
+                timer.Stop();
+                return;
+            }
+
+            #region Save
+
+            savedOptions.InputPath = launcherOptions.InputPath;
+            savedOptions.OutputPath = launcherOptions.OutputPath;
+            savedOptions.NamespaceName = launcherOptions.NamespaceName;
+            savedOptions.IsGenerateErrorCode = launcherOptions.IsGenerateErrorCode;
+            SettingData.SaveSetting();
+
+            #endregion
+
+            ProtoBufMessageHandler.Start(launcherOptions, modeType);
+            Console.WriteLine("导出成功");
         }
-
-        LauncherOptions launcherOptions = new LauncherOptions
+        catch (Exception ex)
         {
-            Mode = savedOptions.Mode,
-            UsingStatements = savedOptions.UsingStatements,
-            IsGenerateDescription = savedOptions.IsGenerateDescription,
-            IsServer = savedOptions.IsServer,
-            InputPath = this.InputPath.Text,
-            OutputPath = this.OutputPath.Text,
-            NamespaceName = this.NameSpace.Text,
-            IsGenerateErrorCode = Convert.ToBoolean(this.IsGenerateErrorCode.IsChecked),
-        };
-
-        if (!Enum.TryParse<ModeType>(launcherOptions.Mode, true, out var modeType))
-        {
-            Console.WriteLine("不支持的运行模式");
-            return;
+            Console.WriteLine($"导出失败: {ex.Message}");
         }
-
-        if (string.IsNullOrWhiteSpace(launcherOptions.InputPath))
+        finally
         {
-            Console.WriteLine("协议文件路径不能为空");
-            return;
+            await Task.Delay(500);
+            timer.Stop();
         }
-
-        if (string.IsNullOrWhiteSpace(launcherOptions.OutputPath))
-        {
-            Console.WriteLine("导出路径不能为空");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(launcherOptions.NamespaceName))
-        {
-            Console.WriteLine("命名空间不能为空");
-            return;
-        }
-
-        #region Save
-
-        savedOptions.InputPath = launcherOptions.InputPath;
-        savedOptions.OutputPath = launcherOptions.OutputPath;
-        savedOptions.NamespaceName = launcherOptions.NamespaceName;
-        savedOptions.IsGenerateErrorCode = launcherOptions.IsGenerateErrorCode;
-        SettingData.SaveSetting();
-
-        #endregion
-
-        ProtoBufMessageHandler.Start(launcherOptions, modeType);
-        Console.WriteLine("导出成功");
-        await Task.Delay(500);
-        timer.Stop();
     }
 
     private void Mode_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
