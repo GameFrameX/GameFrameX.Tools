@@ -106,5 +106,15 @@ namespace GameFrameX.ProtoExport
 
             return typeTs;
         }
+
+        public static string ToCpp(string type)
+        {
+            throw new NotImplementedException("C++ type mapping is not yet implemented.");
+        }
+
+        public static string ToLua(string type)
+        {
+            throw new NotImplementedException("Lua type mapping is not yet implemented.");
+        }
     }
 }
