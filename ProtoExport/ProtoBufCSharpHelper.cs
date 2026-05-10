@@ -2,17 +2,24 @@ using System.Text;
 
 namespace GameFrameX.ProtoExport
 {
-    internal abstract class ProtoBufCSharpBaseHelper : IProtoGenerateHelper
+    [Mode(ModeType.CSharp)]
+    internal sealed class ProtoBufCSharpHelper : IProtoGenerateHelper
     {
-        protected abstract string[] GetUsingStatements();
-        protected abstract bool ShouldGenerateDescription { get; }
+        private readonly CSharpTargetConfig _config;
+
+        public ProtoBufCSharpHelper() : this(TargetType.None) { }
+
+        public ProtoBufCSharpHelper(TargetType targetType)
+        {
+            _config = TargetConfigRegistry.GetCSharpConfig(targetType);
+        }
 
         public void Run(MessageInfoList messageInfoList, string outputPath, string namespaceName = "Hotfix")
         {
             StringBuilder sb = new StringBuilder();
             sb.AddTemplateHeader();
 
-            foreach (var usingStatement in GetUsingStatements())
+            foreach (var usingStatement in _config.UsingStatements)
             {
                 sb.AppendLine(usingStatement);
             }
@@ -44,7 +51,7 @@ namespace GameFrameX.ProtoExport
             sb.AppendLine($"\t/// <summary>");
             sb.AppendLine($"\t/// {operationCodeInfo.Description}");
             sb.AppendLine($"\t/// </summary>");
-            if (ShouldGenerateDescription)
+            if (_config.ShouldGenerateDescription)
             {
                 sb.AppendLine($"\t[System.ComponentModel.Description(\"{operationCodeInfo.Description}\")]");
             }
@@ -61,7 +68,7 @@ namespace GameFrameX.ProtoExport
                 sb.AppendLine($"\t\t/// <summary>");
                 sb.AppendLine($"\t\t/// {operationField.Description}");
                 sb.AppendLine($"\t\t/// </summary>");
-                if (ShouldGenerateDescription)
+                if (_config.ShouldGenerateDescription)
                 {
                     sb.AppendLine($"\t\t[System.ComponentModel.Description(\"{operationField.Description}\")]");
                 }
@@ -82,7 +89,7 @@ namespace GameFrameX.ProtoExport
             sb.AppendLine($"\t/// {operationCodeInfo.Description}");
             sb.AppendLine($"\t/// </summary>");
             sb.AppendLine($"\t[ProtoContract]");
-            if (ShouldGenerateDescription)
+            if (_config.ShouldGenerateDescription)
             {
                 sb.AppendLine($"\t[System.ComponentModel.Description(\"{operationCodeInfo.Description}\")]");
             }
@@ -109,7 +116,7 @@ namespace GameFrameX.ProtoExport
                 sb.AppendLine($"\t\t/// {operationField.Description}");
                 sb.AppendLine($"\t\t/// </summary>");
                 sb.AppendLine($"\t\t[ProtoMember({operationField.Members})]");
-                if (ShouldGenerateDescription)
+                if (_config.ShouldGenerateDescription)
                 {
                     sb.AppendLine($"\t\t[System.ComponentModel.Description(\"{operationField.Description}\")]");
                 }
@@ -172,7 +179,7 @@ namespace GameFrameX.ProtoExport
             sb.AppendLine();
         }
 
-        public virtual void Post(List<MessageInfoList> operationCodeInfo, LauncherOptions launcherOptions)
+        public void Post(List<MessageInfoList> operationCodeInfo, LauncherOptions launcherOptions)
         {
         }
     }
