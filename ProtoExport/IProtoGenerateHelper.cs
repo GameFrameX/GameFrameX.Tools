@@ -6,6 +6,12 @@ namespace GameFrameX.ProtoExport
     internal interface IProtoGenerateHelper
     {
         /// <summary>
+        /// 初始化配置
+        /// </summary>
+        /// <param name="launcherOptions">启动时配置选项</param>
+        void Init(LauncherOptions launcherOptions);
+
+        /// <summary>
         /// 开始生成协议代码
         /// </summary>
         /// <param name="inputPath">包含协议定义的 MessageInfoList 实例</param>

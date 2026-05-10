@@ -8,6 +8,10 @@ namespace GameFrameX.ProtoExport
     [Mode(ModeType.TypeScript)]
     internal class ProtoBufTypeScriptHelper : IProtoGenerateHelper
     {
+        public void Init(LauncherOptions launcherOptions)
+        {
+        }
+
         public void Run(MessageInfoList messageInfoList, string outputPath, string namespaceName)
         {
             StringBuilder sb = new StringBuilder();
