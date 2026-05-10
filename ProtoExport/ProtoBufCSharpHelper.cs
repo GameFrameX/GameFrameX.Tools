@@ -8,14 +8,17 @@ namespace GameFrameX.ProtoExport
         private string[] _usingStatements = [];
         private bool _shouldGenerateDescription;
 
-        public void Run(MessageInfoList messageInfoList, string outputPath, string namespaceName = "Hotfix")
+        public void Run(MessageInfoList messageInfoList, string outputPath, string namespaceName = "GFXHotfix")
         {
             StringBuilder sb = new StringBuilder();
             sb.AddTemplateHeader();
 
-            var normalizedStatements = string.Join(Environment.NewLine,
-                _usingStatements.Select(s => s.Trim().TrimEnd(';') + ";"));
-            sb.AppendLine(normalizedStatements);
+            if (_usingStatements.Length > 0)
+            {
+                var normalizedStatements = string.Join(Environment.NewLine,
+                    _usingStatements.Select(s => s.Trim().TrimEnd(';') + ";"));
+                sb.AppendLine(normalizedStatements);
+            }
 
             sb.AppendLine();
             sb.AppendLine($"namespace {namespaceName}");
@@ -115,18 +118,20 @@ namespace GameFrameX.ProtoExport
                 }
                 if (operationField.IsRepeated)
                 {
-                    sb.AppendLine($"\t\tpublic List<{operationField.Type}> {operationField.Name} {{ get; set; }} = new List<{operationField.Type}>();");
+                    var mappedType = TypeMapper.ToCSharp(operationField.Type);
+                    sb.AppendLine($"\t\tpublic List<{mappedType}> {operationField.Name} {{ get; set; }} = new List<{mappedType}>();");
                 }
                 else
                 {
+                    var mappedType = TypeMapper.ToCSharp(operationField.Type);
                     string defaultValue = string.Empty;
                     if (operationField.IsKv)
                     {
-                        defaultValue = $" = new {operationField.Type}();";
+                        defaultValue = $" = new {mappedType}();";
                         sb.AppendLine($"\t\t[ProtoMap(DisableMap = true)]");
                     }
 
-                    sb.AppendLine($"\t\tpublic {operationField.Type} {operationField.Name} {{ get; set; }}{defaultValue}");
+                    sb.AppendLine($"\t\tpublic {mappedType} {operationField.Name} {{ get; set; }}{defaultValue}");
                 }
 
                 if (index < operationCodeInfo.Fields.Count - 1)
