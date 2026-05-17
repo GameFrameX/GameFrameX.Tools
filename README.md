@@ -349,6 +349,8 @@ Pre-built scripts are available in the `Protobuf/` directory:
 | `Proto2CsExport_Server.sh/.bat` | Export C# for Server |
 | `Proto2CsExport_Client.sh/.bat` | Export C# for Unity Client |
 | `Proto2TsExport.sh/.bat` | Export TypeScript |
+| `Proto2CppExport.sh/.bat` | Export C++ |
+| `Proto2LuaExport.sh/.bat` | Export Lua |
 | `Proto2GoExport.sh/.bat` | Export Go |
 
 ---

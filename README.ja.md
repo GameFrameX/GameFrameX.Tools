@@ -349,6 +349,8 @@ docker run --rm \
 | `Proto2CsExport_Server.sh/.bat` | C# サーバー用コードのエクスポート |
 | `Proto2CsExport_Client.sh/.bat` | C# Unity クライアント用コードのエクスポート |
 | `Proto2TsExport.sh/.bat` | TypeScript コードのエクスポート |
+| `Proto2CppExport.sh/.bat` | C++ コードのエクスポート |
+| `Proto2LuaExport.sh/.bat` | Lua コードのエクスポート |
 | `Proto2GoExport.sh/.bat` | Go コードのエクスポート |
 
 ---
