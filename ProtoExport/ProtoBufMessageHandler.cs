@@ -56,6 +56,12 @@ public static class ProtoBufMessageHandler
             }
 
             var operationCodeInfo = MessageHelper.Parse(File.ReadAllText(file), fileName, launcherOptions.OutputPath, launcherOptions.IsGenerateErrorCode);
+
+            if (launcherOptions.CommentValidation != CommentValidationLevel.None)
+            {
+                CommentValidator.Validate(operationCodeInfo, launcherOptions.CommentValidation);
+            }
+
             messageInfoLists.Add(operationCodeInfo);
 
             protoGenerateHelper.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);

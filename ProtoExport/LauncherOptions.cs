@@ -69,4 +69,26 @@ public sealed class LauncherOptions
     /// </summary>
     [Option("importPath", Required = false, DefaultValue = "../network/", Description = "TypeScript import 路径前缀")]
     public string ImportPath { get; set; }
+
+    /// <summary>
+    /// 注释校验级别: none(不校验) | container(类型级) | member(成员级) | all(全部)
+    /// </summary>
+    [Option("requireComments", Required = false, DefaultValue = "none", Description = "注释校验级别: none(不校验) | container(类型级) | member(成员级) | all(全部)")]
+    public string RequireComments { get; set; }
+
+    /// <summary>
+    /// 解析后的注释校验级别
+    /// </summary>
+    public CommentValidationLevel CommentValidation
+    {
+        get
+        {
+            if (Enum.TryParse<CommentValidationLevel>(RequireComments, true, out var level))
+            {
+                return level;
+            }
+
+            return CommentValidationLevel.None;
+        }
+    }
 }
