@@ -147,6 +147,7 @@ The [TestProtos/](TestProtos/) directory contains example proto files covering a
 | `--outputPath` | Yes | - | Output path for generated files |
 | `--namespaceName` | No | `""` | Namespace for generated code (C# only, ignored by TypeScript) |
 | `--isGenerateErrorCode` | No | `true` | Whether to auto-generate `ErrorCode` field in response messages |
+| `--requireComments` | No | `none` | Comment validation level: `none` (no validation), `container` (message/enum must have comments), `member` (fields/enum members must have comments), `all` (both) |
 
 ## C# Parameters
 

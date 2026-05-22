@@ -147,6 +147,7 @@ message PlayerInfo
 | `--outputPath` | 예 | - | 생성 파일의 출력 경로 |
 | `--namespaceName` | 아니오 | `""` | 생성 코드의 네임스페이스 (C#만 적용, TypeScript는 무시) |
 | `--isGenerateErrorCode` | 아니오 | `true` | 응답 메시지에 `ErrorCode` 필드를 자동 생성할지 여부 |
+| `--requireComments` | 아니오 | `none` | 주석 검증 수준: `none` (검증 없음), `container` (message/enum에 주석 필수), `member` (필드/enum 멤버에 주석 필수), `all` (모두) |
 
 ## C# 전용 매개변수
 

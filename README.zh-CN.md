@@ -147,6 +147,7 @@ message PlayerInfo
 | `--outputPath` | 是 | - | 生成文件的输出路径 |
 | `--namespaceName` | 否 | `""` | 生成代码的命名空间（仅 C# 有效，TypeScript 忽略） |
 | `--isGenerateErrorCode` | 否 | `true` | 是否在响应消息中自动生成 `ErrorCode` 字段 |
+| `--requireComments` | 否 | `none` | 注释校验级别：`none`（不校验）、`container`（message/enum 必须有注释）、`member`（字段/枚举成员必须有注释）、`all`（全部） |
 
 ## C# 专属参数
 

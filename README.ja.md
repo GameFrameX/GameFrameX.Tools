@@ -147,6 +147,7 @@ message PlayerInfo
 | `--outputPath` | はい | - | 生成ファイルの出力パス |
 | `--namespaceName` | いいえ | `""` | 生成コードの名前空間（C# のみ有効、TypeScript では無視） |
 | `--isGenerateErrorCode` | いいえ | `true` | レスポンスメッセージに `ErrorCode` フィールドを自動生成するか |
+| `--requireComments` | いいえ | `none` | コメント検証レベル：`none`（検証なし）、`container`（message/enum にコメント必須）、`member`（フィールド/enum メンバーにコメント必須）、`all`（すべて） |
 
 ## C# 専用パラメータ
 
