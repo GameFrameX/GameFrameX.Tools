@@ -124,7 +124,7 @@ namespace GameFrameX.ProtoExport
 
             foreach (var messageInfoList in operationCodeInfo)
             {
-                stringBuilder.Append($"import {{ {messageInfoList.ModuleName} }} from \"./{messageInfoList.ModuleName}_{messageInfoList.Module}\";\n");
+                stringBuilder.Append($"import {{ {messageInfoList.ModuleName} }} from \"./{messageInfoList.FileName}\";\n");
             }
 
             stringBuilder.Append("\n");

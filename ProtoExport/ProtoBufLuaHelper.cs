@@ -149,7 +149,7 @@ internal sealed class ProtoBufLuaHelper : IProtoGenerateHelper
 
         foreach (var messageInfoList in operationCodeInfo)
         {
-            sb.AppendLine($"local {messageInfoList.ModuleName} = require(\"{launcherOptions.ImportPath}{messageInfoList.ModuleName}_{messageInfoList.Module}\")");
+            sb.AppendLine($"local {messageInfoList.ModuleName} = require(\"{launcherOptions.ImportPath}{messageInfoList.FileName}\")");
         }
 
         sb.AppendLine();
