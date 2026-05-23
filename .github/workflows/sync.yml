@@ -3,6 +3,7 @@ name: Sync Github To Mirror
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   sync:
