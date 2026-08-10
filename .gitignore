@@ -7,5 +7,8 @@ ToolGUI/obj
 ToolGUIProto/obj
 ToolGUIProto/bin
 
+# 用户运行时配置（ToolGUIProto 生成，位于程序基目录）
+**/Setting.json
+
 # gfx-doc（由 Obsidian 管理，项目内为软链接，不纳入版本管理）
 /gfx-doc
