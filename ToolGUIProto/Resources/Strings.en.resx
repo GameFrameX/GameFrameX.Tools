@@ -24,7 +24,7 @@
   <data name="Namespace" xml:space="preserve"><value>Namespace:</value></data>
   <data name="InputPath" xml:space="preserve"><value>Proto file path:</value></data>
   <data name="OutputPath" xml:space="preserve"><value>Output path:</value></data>
-  <data name="UsingStatements" xml:space="preserve"><value>using statements / includes (separated by |):</value></data>
+  <data name="UsingStatements" xml:space="preserve"><value>using statements / includes:</value></data>
   <data name="ImportPath" xml:space="preserve"><value>import path prefix:</value></data>
   <data name="RequireComments" xml:space="preserve"><value>Comment validation level:</value></data>
   <data name="GenerateErrorCode" xml:space="preserve"><value>Generate ErrorCode?</value></data>
@@ -47,4 +47,26 @@
   <data name="ExportSuccess" xml:space="preserve"><value>Export succeeded</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>Export failed</value></data>
   <data name="HelpOpenFailed" xml:space="preserve"><value>Cannot open help document, please visit manually</value></data>
+
+  <!-- Added during v2 redesign: section headers, subtitle, helper text -->
+  <data name="AppSubtitle" xml:space="preserve"><value>Protobuf → multi-language code generation</value></data>
+  <data name="ExportHint" xml:space="preserve"><value>Confirm paths and mode before clicking Export</value></data>
+  <data name="LogTitle" xml:space="preserve"><value>Log</value></data>
+  <data name="GroupExportType" xml:space="preserve"><value>Export type</value></data>
+  <data name="GroupPaths" xml:space="preserve"><value>Paths</value></data>
+  <data name="GroupGeneration" xml:space="preserve"><value>Code generation</value></data>
+  <data name="UsingStatementsHint" xml:space="preserve"><value>One per line; stored as | delimited (matches CLI --usingStatements)</value></data>
+
+  <!-- Detailed option tooltips (shown on hover): explain what each toggling option means -->
+  <data name="GenerateErrorCodeTip" xml:space="preserve"><value>When enabled, all response messages (Resp prefix, non-Notify) get an auto-appended ErrorCode field (int, tag 2047); no need to declare it in proto.</value></data>
+  <data name="GenerateDescriptionTip" xml:space="preserve"><value>C# mode only. When enabled, enum values and fields get [System.ComponentModel.Description] attributes for editor/serialization-friendly display.</value></data>
+  <data name="IsServerTip" xml:space="preserve"><value>When enabled, includes server-only protos (filenames ending with -s/_s) and server-internal protos (negative module IDs). Client builds should keep this off.</value></data>
+  <data name="RequireCommentsTip" xml:space="preserve"><value>none=no check; container=message/enum must have a leading comment; member=fields/enum members must have comments; all=both. Fails export if violated.</value></data>
+
+  <!-- Detailed config tooltips (shown on hover): cover mode selection, paths, namespace, import path -->
+  <data name="ModeTip" xml:space="preserve"><value>Target language/platform. Server=server C#; Unity/Godot=client C#; TypeScript=web/minigames; C++=Unreal; Lua=Defold/Solar2D; Go=Go server. Determines namespace, using statements and filter rules.</value></data>
+  <data name="InputPathTip" xml:space="preserve"><value>Directory containing .proto files. Recursively scans all .proto files (including subdirectories). proto3 syntax subset only.</value></data>
+  <data name="OutputPathTip" xml:space="preserve"><value>Output directory for generated code. Cleared and rebuilt on every export (clean build semantics) — do not point at a directory holding other files.</value></data>
+  <data name="NamespaceTip" xml:space="preserve"><value>Namespace/package name for generated code. Required for C# / C++ / Go; ignored by TypeScript (uses proto package name); ignored by Lua.</value></data>
+  <data name="ImportPathTip" xml:space="preserve"><value>TypeScript / Lua modes only. Path prefix for generated import statements, e.g. ../network/ or ./network/.</value></data>
 </root>

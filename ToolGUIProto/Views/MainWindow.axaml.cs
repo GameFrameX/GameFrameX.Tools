@@ -18,6 +18,13 @@ public partial class MainWindow : Window
     StringWriter stringWriter;
     DispatcherTimer timer;
 
+    /// <summary>
+    /// 构造完成标志。Mode_OnSelectionChanged 在 XAML 初始化期间（EndInit 设置
+    /// SelectedIndex 时）会被 Avalonia 触发,此时 NameSpaceRow 等后续 x:Name 字段
+    /// 还未绑定,null 引用会爆。构造期跳过事件处理,用户交互不受影响。
+    /// </summary>
+    bool _initialized;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -33,6 +40,47 @@ public partial class MainWindow : Window
         SettingData.LoadSetting();
         InitLanguageSelector();
         ApplyOptionsToUI(SettingData.GetOptions(this.Mode.SelectionBoxItem?.ToString()));
+        UpdateModeSpecificVisibility(this.Mode.SelectionBoxItem?.ToString());
+        _initialized = true;
+    }
+
+    /// <summary>
+    /// 按当前 Mode 切换「命名空间 / Using 语句 / import 路径」三组的可见性。
+    /// 规则与 <see cref="ExportAsync"/> 的 needsNamespace 判定一致(数据层校验),
+    /// 仅作用于 UI 隐藏;实际校验仍由 ExportAsync 兜底,避免 UI 与逻辑分离后遗漏场景。
+    /// </summary>
+    private void UpdateModeSpecificVisibility(string modeKey)
+    {
+        // 模式名解析失败时全部显示,作为最保守的兜底。
+        var showNamespace = true;
+        var showImportPath = true;
+        if (!string.IsNullOrWhiteSpace(modeKey)
+            && Enum.TryParse<ModeType>(GetModeTypeFor(modeKey), true, out var modeType))
+        {
+            showNamespace = modeType == ModeType.CSharp || modeType == ModeType.Cpp || modeType == ModeType.Go;
+            showImportPath = modeType == ModeType.TypeScript || modeType == ModeType.Lua;
+        }
+
+        this.NameSpaceRow.IsVisible = showNamespace;
+        this.UsingStatementsRow.IsVisible = showNamespace;
+        this.ImportPathRow.IsVisible = showImportPath;
+    }
+
+    /// <summary>
+    /// UI 模式显示名(ComboBox 项) → 数据层 ModeType 字符串。
+    /// 与 <see cref="SettingData"/> 的 Options key 一致:Server/Unity/Godot 都映射到 CSharp。
+    /// </summary>
+    private static string GetModeTypeFor(string displayKey)
+    {
+        return displayKey switch
+        {
+            "Server" or "Unity" or "Godot" => ModeType.CSharp.ToString(),
+            "TypeScript" => ModeType.TypeScript.ToString(),
+            "C++" => ModeType.Cpp.ToString(),
+            "Lua" => ModeType.Lua.ToString(),
+            "Go" => ModeType.Go.ToString(),
+            _ => displayKey,
+        };
     }
 
     private void Timer_Tick(object sender, EventArgs e)
@@ -133,6 +181,8 @@ public partial class MainWindow : Window
             // 记录完整异常（含堆栈与内部异常），便于定位。
             ExportLogger.WriteLine(Localization.Instance.ExportFailed + ": " + ex);
             FlushLog();
+            // 自动展开日志，避免用户错过失败原因。
+            this.LogExpander.IsExpanded = true;
         }
     }
 
@@ -227,7 +277,15 @@ public partial class MainWindow : Window
 
     private void Mode_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        ApplyOptionsToUI(SettingData.GetOptions(this.Mode?.SelectionBoxItem?.ToString()));
+        // 构造期跳过:XAML 解析过程中 Mode.SelectedIndex 初次赋值就会触发此事件,
+        // 但后续 x:Name 字段(NameSpaceRow 等)此时还未绑定,直接访问会 NRE。
+        if (!_initialized)
+        {
+            return;
+        }
+        var modeKey = this.Mode?.SelectionBoxItem?.ToString();
+        ApplyOptionsToUI(SettingData.GetOptions(modeKey));
+        UpdateModeSpecificVisibility(modeKey);
     }
 
     /// <summary>
