@@ -24,6 +24,27 @@
 
 言語別エクスポートの Proto プロトコルコード生成ツールです。C#、TypeScript に対応、C++ と Lua は開発中です。
 
+# ビルド
+
+`ProtoExport` プロジェクトは、ビルド成果物を**固定の同階層パス** `../Protobuf/Tools/`（リポジトリルート相対、すなわち `<ワークスペース>/Protobuf/Tools/`）に出力するよう設定されています。パスは `.csproj` の位置を `$(MSBuildThisFileDirectory)` で基準にするため、`Tools` と `Protobuf` を同階層にクローンすればどの環境でも同じように解決されます。
+
+この固定パスは `Protobuf` リポジトリの `Proto2*Export.{sh,bat}` スクリプト（例: `dotnet ./Tools/ProtoExport.dll ...`）が消費し、DLL は `Protobuf/Tools/ProtoExport.dll` にあることを前提とします。
+
+```bash
+# Tools/ProtoExport ディレクトリ（またはリポジトリルート）で実行
+dotnet build ProtoExport/ProtoExport.csproj -c Release
+# 成果物は ../Protobuf/Tools/ProtoExport.dll に配置（TFM/RID サブディレクトリなし）
+```
+
+固定パスを成立させるビルド プロパティ（`ProtoExport/ProtoExport.csproj` で設定）:
+
+- `OutputPath` = `$(MSBuildThisFileDirectory)../../Protobuf/Tools/` — Debug/Release 共通の出力ディレクトリ。
+- `AppendTargetFrameworkToOutputPath` = `false` — `net10.0/` サブディレクトリを生成しない。
+- `AppendRuntimeIdentifierToOutputPath` = `false` — `win-x64/`、`linux-arm64/` サブディレクトリを生成しない。
+
+> SDK デフォルトの `output-paths` target に上書きされないよう、`OutDir` ではなく `OutputPath` を使用します。
+
+
 # Docker
 
 `linux/amd64` および `linux/arm64` 用の Docker イメージが提供されています。

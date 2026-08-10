@@ -24,6 +24,27 @@
 
 A language-oriented tool for converting Proto protocol files into multi-language code. Supports C#, TypeScript, C++ (planned), and Lua (planned).
 
+# Build
+
+The `ProtoExport` project is configured to emit its build output to a **fixed sibling path**: `../Protobuf/Tools/` (relative to the repository root, i.e. `<workspace>/Protobuf/Tools/`). The path is anchored to the `.csproj` location via `$(MSBuildThisFileDirectory)`, so it resolves identically on any machine that clones `Tools` and `Protobuf` as sibling directories.
+
+This fixed location is consumed by the `Proto2*Export.{sh,bat}` scripts in the `Protobuf` repo (e.g. `dotnet ./Tools/ProtoExport.dll ...`), which expect the DLL at `Protobuf/Tools/ProtoExport.dll`.
+
+```bash
+# From the Tools/ProtoExport directory (or the repo root)
+dotnet build ProtoExport/ProtoExport.csproj -c Release
+# Output lands at: ../Protobuf/Tools/ProtoExport.dll  (no TFM/RID subdirectory)
+```
+
+Build properties that make the fixed path work (set in `ProtoExport/ProtoExport.csproj`):
+
+- `OutputPath` = `$(MSBuildThisFileDirectory)../../Protobuf/Tools/` — single output dir for Debug and Release.
+- `AppendTargetFrameworkToOutputPath` = `false` — no `net10.0/` subdirectory.
+- `AppendRuntimeIdentifierToOutputPath` = `false` — no `win-x64/`, `linux-arm64/` subdirectory.
+
+> `OutputPath` is used instead of `OutDir` to avoid being overridden by the SDK's default `output-paths` target.
+
+
 # Docker
 
 Pre-built Docker images are available for `linux/amd64` and `linux/arm64`.
