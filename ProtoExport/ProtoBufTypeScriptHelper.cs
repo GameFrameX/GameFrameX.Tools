@@ -43,7 +43,7 @@ namespace GameFrameX.ProtoExport
             }
 
             sb.Append("}\n");
-            Console.WriteLine($"Generate File:{messageInfoList.OutputPath + ".ts"}");
+            ExportLogger.WriteLine($"Generate File:{messageInfoList.OutputPath + ".ts"}");
             File.WriteAllText(messageInfoList.OutputPath + ".ts", sb.ToString(), Encoding.UTF8);
         }
 

@@ -21,7 +21,7 @@ public static partial class MessageHelper
 
         if (!packageMatch.Success)
         {
-            Console.WriteLine("Package not found");
+            ExportLogger.WriteLine("Package not found");
             throw new Exception("Package not found==>example: package {" + fileName + "};");
         }
 
@@ -42,18 +42,18 @@ public static partial class MessageHelper
             }
             else
             {
-                Console.WriteLine("Module range error");
+                ExportLogger.WriteLine("Module range error");
                 throw new FormatException($"Module range error==>module > {short.MinValue} and module < {short.MaxValue}");
             }
         }
         else
         {
-            Console.WriteLine("Module not found");
+            ExportLogger.WriteLine("Module not found");
             throw new Exception("Module not found==>example: option module = 100");
         }
 
         var packageName = packageMatch.Groups[1].Value;
-        Console.WriteLine($"Package: {packageName} => Module: {moduleMatch.Groups[1].Value}");
+        ExportLogger.WriteLine($"Package: {packageName} => Module: {moduleMatch.Groups[1].Value}");
         // 使用正则表达式提取枚举类型
         ParseEnum(proto, packageName, messageInfo.Infos);
 

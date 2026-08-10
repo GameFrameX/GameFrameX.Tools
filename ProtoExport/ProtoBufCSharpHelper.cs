@@ -38,7 +38,7 @@ namespace GameFrameX.ProtoExport
 
             sb.Append("}");
             sb.AppendLine();
-            Console.WriteLine($"Generate File:{messageInfoList.OutputPath + ".cs"}");
+            ExportLogger.WriteLine($"Generate File:{messageInfoList.OutputPath + ".cs"}");
             File.WriteAllText(messageInfoList.OutputPath + ".cs", sb.ToString(), Encoding.UTF8);
         }
 
