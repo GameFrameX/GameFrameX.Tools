@@ -362,7 +362,7 @@ docker run --rm \
 
 ---
 
-# GUI 도구 (ToolGUIProto)
+# GUI 도구 (ProtoExporterGUI)
 
 ProtoExport CLI를 래핑하는 크로스 플랫폼 Avalonia GUI로, 명령줄 인수를 직접 입력할 필요가 없습니다.
 
@@ -378,7 +378,7 @@ ProtoExport CLI를 래핑하는 크로스 플랫폼 Avalonia GUI로, 명령줄 �
 ## 빌드 및 게시
 
 ```bash
-dotnet publish ToolGUIProto/ToolGUIProto.csproj -c Release -r win-x64 --no-self-contained
+dotnet publish ProtoExporterGUI/ProtoExporterGUI.csproj -c Release -r win-x64 --no-self-contained
 # 기타 RID: osx-arm64 / osx-x64 / linux-x64 / linux-arm64
 ```
 

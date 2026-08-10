@@ -362,7 +362,7 @@ docker run --rm \
 
 ---
 
-# GUI ツール（ToolGUIProto）
+# GUI ツール（ProtoExporterGUI）
 
 ProtoExport CLI をラップするクロスプラットフォームの Avalonia GUI で、コマンドライン引数を手打ちする手間を省けます。
 
@@ -378,7 +378,7 @@ ProtoExport CLI をラップするクロスプラットフォームの Avalonia 
 ## ビルドと発行
 
 ```bash
-dotnet publish ToolGUIProto/ToolGUIProto.csproj -c Release -r win-x64 --no-self-contained
+dotnet publish ProtoExporterGUI/ProtoExporterGUI.csproj -c Release -r win-x64 --no-self-contained
 # その他の RID：osx-arm64 / osx-x64 / linux-x64 / linux-arm64
 ```
 
