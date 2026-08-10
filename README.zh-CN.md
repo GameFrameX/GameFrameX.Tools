@@ -362,6 +362,40 @@ docker run --rm \
 
 ---
 
+# GUI 工具（ToolGUIProto）
+
+跨平台 Avalonia GUI，封装 ProtoExport CLI，免去手敲命令行参数。
+
+## 功能特性
+
+- 7 种导出模式（Server / Unity / Godot / TypeScript / C++ / Lua / Go）下拉切换
+- 全部 CLI 参数可视化编辑（命名空间、using/import、注释校验级别、错误码、Description、服务器模式）
+- 路径 FolderPicker 浏览选择（不再手敲）
+- 中/英文界面实时切换
+- 配置持久化（按模式分别保存到程序目录的 `Setting.json`，深度合并默认值，无损升级）
+- 实时日志输出区
+
+## 构建发布
+
+```bash
+dotnet publish ToolGUIProto/ToolGUIProto.csproj -c Release -r win-x64 --no-self-contained
+# 其他 RID：osx-arm64 / osx-x64 / linux-x64 / linux-arm64
+```
+
+产物为单文件可执行（不含运行时，需目标机预装 .NET 10 运行时）。
+
+## 使用步骤
+
+1. 启动程序
+2. 选择导出模式
+3. 填写或浏览选择输入/输出路径
+4. 点击导出
+5. 查看日志区
+
+GUI 与 CLI 功能等价；CI/自动化场景仍建议使用 CLI 或 Docker。
+
+---
+
 # 快捷导出脚本
 
 `Protobuf/` 目录下提供了预置的导出脚本：
