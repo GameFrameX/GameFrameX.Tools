@@ -1,5 +1,5 @@
 <Solution>
   <Project Path="ProtoExport/ProtoExport.csproj" />
-  <Project Path="ToolGUIProto.Tests/ToolGUIProto.Tests.csproj" />
-  <Project Path="ToolGUIProto/ToolGUIProto.csproj" />
+  <Project Path="ProtoExporterGUI.Tests/ProtoExporterGUI.Tests.csproj" />
+  <Project Path="ProtoExporterGUI/ProtoExporterGUI.csproj" />
 </Solution>
