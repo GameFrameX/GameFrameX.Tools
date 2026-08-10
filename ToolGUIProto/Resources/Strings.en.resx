@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="xml:space" type="xsd:string" use="optional" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <data name="WindowTitle" xml:space="preserve"><value>ToolGUIProto</value></data>
+  <data name="ExportType" xml:space="preserve"><value>Export type:</value></data>
+  <data name="Namespace" xml:space="preserve"><value>Namespace:</value></data>
+  <data name="InputPath" xml:space="preserve"><value>Proto file path:</value></data>
+  <data name="OutputPath" xml:space="preserve"><value>Output path:</value></data>
+  <data name="UsingStatements" xml:space="preserve"><value>using statements / includes (separated by |):</value></data>
+  <data name="ImportPath" xml:space="preserve"><value>import path prefix:</value></data>
+  <data name="RequireComments" xml:space="preserve"><value>Comment validation level:</value></data>
+  <data name="GenerateErrorCode" xml:space="preserve"><value>Generate ErrorCode?</value></data>
+  <data name="GenerateDescription" xml:space="preserve"><value>Generate Description?</value></data>
+  <data name="IsServer" xml:space="preserve"><value>Server mode?</value></data>
+  <data name="ServerModeHint" xml:space="preserve"><value>(includes server-only proto files)</value></data>
+
+  <data name="Export" xml:space="preserve"><value>Export</value></data>
+  <data name="Help" xml:space="preserve"><value>Help</value></data>
+  <data name="Browse" xml:space="preserve"><value>Browse...</value></data>
+  <data name="Language" xml:space="preserve"><value>Language:</value></data>
+
+  <data name="PickInputFolder" xml:space="preserve"><value>Select proto file folder</value></data>
+  <data name="PickOutputFolder" xml:space="preserve"><value>Select output folder</value></data>
+
+  <data name="ErrUnsupportedMode" xml:space="preserve"><value>Unsupported export mode</value></data>
+  <data name="ErrInputPathEmpty" xml:space="preserve"><value>Proto file path must not be empty</value></data>
+  <data name="ErrOutputPathEmpty" xml:space="preserve"><value>Output path must not be empty</value></data>
+  <data name="ErrNamespaceEmpty" xml:space="preserve"><value>Namespace must not be empty</value></data>
+  <data name="ExportSuccess" xml:space="preserve"><value>Export succeeded</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>Export failed</value></data>
+  <data name="HelpOpenFailed" xml:space="preserve"><value>Cannot open help document, please visit manually</value></data>
+</root>
