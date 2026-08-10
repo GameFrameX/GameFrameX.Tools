@@ -362,7 +362,7 @@ docker run --rm \
 
 ---
 
-# GUI 工具（ToolGUIProto）
+# GUI 工具（ProtoExporterGUI）
 
 跨平台 Avalonia GUI，封装 ProtoExport CLI，免去手敲命令行参数。
 
@@ -378,7 +378,7 @@ docker run --rm \
 ## 构建发布
 
 ```bash
-dotnet publish ToolGUIProto/ToolGUIProto.csproj -c Release -r win-x64 --no-self-contained
+dotnet publish ProtoExporterGUI/ProtoExporterGUI.csproj -c Release -r win-x64 --no-self-contained
 # 其他 RID：osx-arm64 / osx-x64 / linux-x64 / linux-arm64
 ```
 

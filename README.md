@@ -362,7 +362,7 @@ docker run --rm \
 
 ---
 
-# GUI Tool (ToolGUIProto)
+# GUI Tool (ProtoExporterGUI)
 
 A cross-platform Avalonia GUI that wraps the ProtoExport CLI, so you can generate code without typing command-line arguments by hand.
 
@@ -378,7 +378,7 @@ A cross-platform Avalonia GUI that wraps the ProtoExport CLI, so you can generat
 ## Build & Publish
 
 ```bash
-dotnet publish ToolGUIProto/ToolGUIProto.csproj -c Release -r win-x64 --no-self-contained
+dotnet publish ProtoExporterGUI/ProtoExporterGUI.csproj -c Release -r win-x64 --no-self-contained
 # Other RIDs: osx-arm64 / osx-x64 / linux-x64 / linux-arm64
 ```
 
