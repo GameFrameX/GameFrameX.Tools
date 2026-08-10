@@ -1,3 +1,13 @@
+## [0.3.6] - 2026-08-10
+
+### Documentation
+
+* 多语言 README 同步新增构建说明章节
+
+### build
+
+* 忽略 gfx-doc 软链接目录
+* 配置构建产物输出到 Protobuf/Tools/
 ## [0.3.5] - 2026-08-10
 
 ### Bug Fixes
