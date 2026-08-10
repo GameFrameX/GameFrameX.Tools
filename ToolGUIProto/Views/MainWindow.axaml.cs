@@ -1,12 +1,15 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using GameFrameX.ProtoExport;
 using ToolGUI.Models;
+using ToolGUI.Resources;
 
 namespace ToolGUI.Views;
 
@@ -18,35 +21,128 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Width = 450;
-        Height = 400;
-        MaxWidth = 450;
+        // 窗口尺寸已移至 XAML 定义，且允许缩放（原 MaxWidth=450 会阻止拉宽，影响长参数可见性）
         stringWriter = new StringWriter();
-        Console.SetOut(stringWriter);
+        // 不再劫持 Console.SetOut（全局副作用，窗口多次构造会泄漏、与 CLI 共存场景冲突）。
+        // 改为把 ExportLogger 网关的输出委托指向本地 StringWriter，仅捕获库内日志。
+        ExportLogger.WriteLine = msg => stringWriter.WriteLine(msg);
         timer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(100),
         };
-        timer.Tick += Timer_Tick;
         SettingData.LoadSetting();
-        var options = SettingData.GetOptions(this.Mode.SelectionBoxItem?.ToString());
-        if (options != null)
-        {
-            this.InputPath.Text = options.InputPath;
-            this.OutputPath.Text = options.OutputPath;
-            this.NameSpace.Text = options.NamespaceName;
-            this.IsGenerateErrorCode.IsChecked = options.IsGenerateErrorCode;
-        }
+        InitLanguageSelector();
+        ApplyOptionsToUI(SettingData.GetOptions(this.Mode.SelectionBoxItem?.ToString()));
     }
 
     private void Timer_Tick(object sender, EventArgs e)
     {
+        FlushLog();
+    }
+
+    /// <summary>
+    /// 把当前 StringWriter 缓冲同步到日志区。限制最大长度避免超大输出卡 UI。
+    /// </summary>
+    private void FlushLog()
+    {
         var output = stringWriter.ToString();
+        if (output.Length > 16384)
+        {
+            output = output.Substring(output.Length - 16384);
+        }
         ErrorLog.Text = output;
     }
 
+    /// <summary>
+    /// 数据层 LauncherOptions.UsingStatements 以 | 分隔（与 CLI --usingStatements 契约一致），
+    /// 但 UI 上单行展示多条 using 难读难编辑。本组 helper 在 UI 与数据之间做 | ↔ 换行 的双向转换。
+    /// 规则：每个非空段一行，平台换行符统一用 Environment.NewLine。
+    /// </summary>
+    internal static string PipeToMultiline(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+        var parts = value.Split('|', StringSplitOptions.RemoveEmptyEntries)
+                          .Select(p => p.Trim())
+                          .Where(p => p.Length > 0);
+        return string.Join(Environment.NewLine, parts);
+    }
+
+    internal static string MultilineToPipe(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        // 兼容 \r\n / \r / \n 三种换行，逐行 trim 后用 | 拼接（与 CLI 解析一致）。
+        var lines = value.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+                         .Select(l => l.Trim())
+                         .Where(l => l.Length > 0);
+        return string.Join("|", lines);
+    }
+    /// <summary>
+    /// 将 LauncherOptions 的全部字段同步到 UI 控件。统一用于初始化和模式切换，
+    /// 保证 UI 与配置一一对应。null 时跳过（保留控件原值）。
+    /// </summary>
+    private void ApplyOptionsToUI(LauncherOptions options)
+    {
+        if (options == null)
+        {
+            return;
+        }
+
+        this.InputPath.Text = options.InputPath;
+        this.OutputPath.Text = options.OutputPath;
+        this.NameSpace.Text = options.NamespaceName;
+        this.IsGenerateErrorCode.IsChecked = options.IsGenerateErrorCode;
+        this.UsingStatements.Text = PipeToMultiline(options.UsingStatements);
+        this.ImportPath.Text = options.ImportPath;
+        this.IsGenerateDescription.IsChecked = options.IsGenerateDescription;
+        this.IsServer.IsChecked = options.IsServer;
+
+        // 注释校验级别：ComboBox 按枚举字符串匹配，匹配失败回退到 none（索引 0）
+        var requireComments = string.IsNullOrWhiteSpace(options.RequireComments) ? "none" : options.RequireComments;
+        var rcIndex = 0;
+        for (var i = 0; i < this.RequireComments.ItemCount; i++)
+        {
+            if (string.Equals(this.RequireComments.Items[i]?.ToString(), requireComments, StringComparison.OrdinalIgnoreCase))
+            {
+                rcIndex = i;
+                break;
+            }
+        }
+        this.RequireComments.SelectedIndex = rcIndex;
+    }
+
+    /// <summary>
+    /// 导出按钮事件处理器（必须为 async void 以满足 Avalonia 事件签名）。
+    /// 仅负责防重入与顶层异常兜底，核心逻辑下沉到 <see cref="ExportAsync"/>，
+    /// 异常冒泡至此记录完整堆栈（原实现仅记录 ex.Message，丢失堆栈无法定位问题）。
+    /// </summary>
     private async void Button_OnClick(object sender, RoutedEventArgs e)
     {
+        // 防重入：导出过程会清空/重建输出目录（ProtoBufMessageHandler.Start），
+        // 并发触发会产生目录竞态。点击即禁用，结束时恢复。
+        if (!this.ExportButton.IsEnabled)
+        {
+            return;
+        }
+
+        try
+        {
+            await ExportAsync();
+        }
+        catch (Exception ex)
+        {
+            // 记录完整异常（含堆栈与内部异常），便于定位。
+            ExportLogger.WriteLine(Localization.Instance.ExportFailed + ": " + ex);
+            FlushLog();
+        }
+    }
+
+    /// <summary>
+    /// 导出核心流程。验证失败用 return 正常退出（不抛异常）；运行时异常冒泡到
+    /// <see cref="Button_OnClick"/> 由顶层 catch 记录完整堆栈。
+    /// </summary>
+    private async Task ExportAsync()
+    {
+        this.ExportButton.IsEnabled = false;
         stringWriter.GetStringBuilder().Clear();
         timer.Start();
 
@@ -56,93 +152,211 @@ public partial class MainWindow : Window
             var savedOptions = SettingData.GetOptions(modeName);
             if (savedOptions == null)
             {
-                Console.WriteLine("不支持的运行模式");
-                timer.Stop();
+                ExportLogger.WriteLine(Localization.Instance.ErrUnsupportedMode);
                 return;
             }
 
-            LauncherOptions launcherOptions = new LauncherOptions
+            var launcherOptions = new LauncherOptions
             {
                 Mode = savedOptions.Mode,
-                UsingStatements = savedOptions.UsingStatements,
-                IsGenerateDescription = savedOptions.IsGenerateDescription,
-                IsServer = savedOptions.IsServer,
+                UsingStatements = MultilineToPipe(this.UsingStatements.Text),
+                ImportPath = this.ImportPath.Text,
+                IsGenerateDescription = this.IsGenerateDescription.IsChecked ?? false,
+                IsServer = this.IsServer.IsChecked ?? false,
                 InputPath = this.InputPath.Text,
                 OutputPath = this.OutputPath.Text,
                 NamespaceName = this.NameSpace.Text,
-                IsGenerateErrorCode = Convert.ToBoolean(this.IsGenerateErrorCode.IsChecked),
+                IsGenerateErrorCode = this.IsGenerateErrorCode.IsChecked ?? true,
+                RequireComments = this.RequireComments.SelectedItem?.ToString() ?? "none",
             };
 
             if (!Enum.TryParse<ModeType>(launcherOptions.Mode, true, out var modeType))
             {
-                Console.WriteLine("不支持的运行模式");
-                timer.Stop();
+                ExportLogger.WriteLine(Localization.Instance.ErrUnsupportedMode);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(launcherOptions.InputPath))
             {
-                Console.WriteLine("协议文件路径不能为空");
-                timer.Stop();
+                ExportLogger.WriteLine(Localization.Instance.ErrInputPathEmpty);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(launcherOptions.OutputPath))
             {
-                Console.WriteLine("导出路径不能为空");
-                timer.Stop();
+                ExportLogger.WriteLine(Localization.Instance.ErrOutputPathEmpty);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(launcherOptions.NamespaceName))
+            // C# / C++ / Go 模式需要命名空间；TypeScript / Lua 模式忽略此参数（允许留空）。
+            var needsNamespace = modeType == ModeType.CSharp || modeType == ModeType.Cpp || modeType == ModeType.Go;
+            if (needsNamespace && string.IsNullOrWhiteSpace(launcherOptions.NamespaceName))
             {
-                Console.WriteLine("命名空间不能为空");
-                timer.Stop();
+                ExportLogger.WriteLine(Localization.Instance.ErrNamespaceEmpty);
                 return;
             }
 
             #region Save
 
+            // 全字段回写：保存用户对任意参数的修改，下次启动时恢复。
             savedOptions.InputPath = launcherOptions.InputPath;
             savedOptions.OutputPath = launcherOptions.OutputPath;
             savedOptions.NamespaceName = launcherOptions.NamespaceName;
             savedOptions.IsGenerateErrorCode = launcherOptions.IsGenerateErrorCode;
+            savedOptions.UsingStatements = launcherOptions.UsingStatements;
+            savedOptions.ImportPath = launcherOptions.ImportPath;
+            savedOptions.IsGenerateDescription = launcherOptions.IsGenerateDescription;
+            savedOptions.IsServer = launcherOptions.IsServer;
+            savedOptions.RequireComments = launcherOptions.RequireComments;
             SettingData.SaveSetting();
 
             #endregion
 
             ProtoBufMessageHandler.Start(launcherOptions, modeType);
-            Console.WriteLine("导出成功");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"导出失败: {ex.Message}");
+            ExportLogger.WriteLine(Localization.Instance.ExportSuccess);
         }
         finally
         {
+            // 多停留 500ms 让最后的日志被 DispatcherTimer 刷到 UI，再停止定时器。
             await Task.Delay(500);
             timer.Stop();
+            FlushLog();
+            this.ExportButton.IsEnabled = true;
         }
     }
 
     private void Mode_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var options = SettingData.GetOptions(this.Mode?.SelectionBoxItem?.ToString());
-        if (options != null)
+        ApplyOptionsToUI(SettingData.GetOptions(this.Mode?.SelectionBoxItem?.ToString()));
+    }
+
+    /// <summary>
+    /// 初始化语言下拉框。用 SupportedCultures 填充，默认选中当前 UI Culture。
+    /// </summary>
+    private void InitLanguageSelector()
+    {
+        this.LanguageSelector.Items.Clear();
+        foreach (var (code, display) in Localization.SupportedCultures)
         {
-            this.InputPath.Text = options.InputPath;
-            this.OutputPath.Text = options.OutputPath;
-            this.NameSpace.Text = options.NamespaceName;
-            this.IsGenerateErrorCode.IsChecked = options.IsGenerateErrorCode;
+            this.LanguageSelector.Items.Add(display);
+        }
+        // 默认选中当前 UI Culture 对应项；未匹配则回退第一项（中文）。
+        var current = System.Globalization.CultureInfo.CurrentUICulture.Name;
+        var matchIndex = Array.FindIndex(Localization.SupportedCultures, c => c.Code == current);
+        // CurrentUICulture 可能是 "zh-CN" 之外的中性名（如 "zh"），宽松匹配首字母。
+        if (matchIndex < 0)
+        {
+            matchIndex = Array.FindIndex(Localization.SupportedCultures, c => current.StartsWith(c.Code.Split('-')[0], StringComparison.OrdinalIgnoreCase));
+        }
+        this.LanguageSelector.SelectedIndex = matchIndex < 0 ? 0 : matchIndex;
+    }
+
+    /// <summary>
+    /// 语言切换：按选择索引切 Culture，Localization 触发 PropertyChanged 刷新所有绑定。
+    /// </summary>
+    private void LanguageSelector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // 构造期间 Items 还没填完会触发，跳过无效索引。
+        var idx = this.LanguageSelector.SelectedIndex;
+        if (idx < 0 || idx >= Localization.SupportedCultures.Length)
+        {
+            return;
+        }
+        Localization.Instance.SetCulture(Localization.SupportedCultures[idx].Code);
+    }
+
+    /// <summary>
+    /// 选择协议文件目录。跨平台 FolderPicker（Avalonia StorageProvider），
+    /// 替代手敲路径。若当前 TextBox 已有有效路径，从中开始浏览。
+    /// </summary>
+    private async void BrowseInputPath_OnClick(object sender, RoutedEventArgs e)
+    {
+        var folder = await PickFolder(Localization.Instance.PickInputFolder, this.InputPath.Text);
+        if (folder != null)
+        {
+            this.InputPath.Text = folder;
+        }
+    }
+
+    /// <summary>
+    /// 选择导出文件目录。用户可能选已存在目录（会被工具清空重建）或新目录。
+    /// </summary>
+    private async void BrowseOutputPath_OnClick(object sender, RoutedEventArgs e)
+    {
+        var folder = await PickFolder(Localization.Instance.PickOutputFolder, this.OutputPath.Text);
+        if (folder != null)
+        {
+            this.OutputPath.Text = folder;
+        }
+    }
+
+    /// <summary>
+    /// 打开文件夹选择器，返回本地路径字符串；用户取消返回 null。
+    /// 起始位置：优先用 current 值（若指向存在的目录），否则交给系统默认。
+    /// </summary>
+    private async Task<string> PickFolder(string title, string current)
+    {
+        var startLocation = await TryGetStartLocation(current);
+        var options = new FolderPickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = false,
+            SuggestedStartLocation = startLocation,
+        };
+        var folders = await StorageProvider.OpenFolderPickerAsync(options);
+        if (folders == null || folders.Count == 0)
+        {
+            return null;
+        }
+        return folders[0].Path.LocalPath;
+    }
+
+    /// <summary>
+    /// 仅当路径指向存在的目录时返回对应的 IStorageFolder，否则 null。
+    /// </summary>
+    private async Task<IStorageFolder> TryGetStartLocation(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+        {
+            return null;
+        }
+        try
+        {
+            return await StorageProvider.TryGetFolderFromPathAsync(path);
+        }
+        catch
+        {
+            return null;
         }
     }
 
     private void HelpButton_OnClick(object sender, RoutedEventArgs e)
     {
-        Process.Start(new ProcessStartInfo
+        // 跨平台打开 URL：UseShellExecute=true 在 macOS/Linux 上会抛异常，
+        // 按平台选择原生命令（open / xdg-open）或回退到 Windows 的 UseShellExecute。
+        var url = "https://gameframex.doc.alianblank.com/tools/proto/launcher-params.html";
+        try
         {
-            FileName = "https://gameframex.doc.alianblank.com/tools/proto/launcher-params.html",
-            UseShellExecute = true
-        });
+            if (OperatingSystem.IsMacOS())
+            {
+                Process.Start(new ProcessStartInfo("open", url));
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                Process.Start(new ProcessStartInfo("xdg-open", url));
+            }
+            else
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            ExportLogger.WriteLine(Localization.Instance.HelpOpenFailed + ": " + ex.Message + " " + url);
+        }
     }
 }

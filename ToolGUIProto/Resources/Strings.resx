@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    默认（中文）资源。运行时通过 LocalizationService 切换 CurrentThread.CurrentUICulture
+    加载对应语言的 Resources.<culture>.resx。新增语言只需新增同名附属程序集 resx。
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="xml:space" type="xsd:string" use="optional" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <data name="WindowTitle" xml:space="preserve"><value>ToolGUIProto</value></data>
+  <data name="ExportType" xml:space="preserve"><value>导出类型：</value></data>
+  <data name="Namespace" xml:space="preserve"><value>命名空间：</value></data>
+  <data name="InputPath" xml:space="preserve"><value>协议文件路径：</value></data>
+  <data name="OutputPath" xml:space="preserve"><value>导出文件路径：</value></data>
+  <data name="UsingStatements" xml:space="preserve"><value>using 语句 / 引用（以 | 分隔）：</value></data>
+  <data name="ImportPath" xml:space="preserve"><value>import 路径前缀：</value></data>
+  <data name="RequireComments" xml:space="preserve"><value>注释校验级别：</value></data>
+  <data name="GenerateErrorCode" xml:space="preserve"><value>生成错误码？</value></data>
+  <data name="GenerateDescription" xml:space="preserve"><value>生成 Description？</value></data>
+  <data name="IsServer" xml:space="preserve"><value>服务器模式？</value></data>
+  <data name="ServerModeHint" xml:space="preserve"><value>（含服务端专属协议文件）</value></data>
+
+  <data name="Export" xml:space="preserve"><value>导出</value></data>
+  <data name="Help" xml:space="preserve"><value>帮助文档</value></data>
+  <data name="Browse" xml:space="preserve"><value>浏览…</value></data>
+  <data name="Language" xml:space="preserve"><value>语言：</value></data>
+
+  <data name="PickInputFolder" xml:space="preserve"><value>选择协议文件目录</value></data>
+  <data name="PickOutputFolder" xml:space="preserve"><value>选择导出文件目录</value></data>
+
+  <data name="ErrUnsupportedMode" xml:space="preserve"><value>不支持的运行模式</value></data>
+  <data name="ErrInputPathEmpty" xml:space="preserve"><value>协议文件路径不能为空</value></data>
+  <data name="ErrOutputPathEmpty" xml:space="preserve"><value>导出路径不能为空</value></data>
+  <data name="ErrNamespaceEmpty" xml:space="preserve"><value>命名空间不能为空</value></data>
+  <data name="ExportSuccess" xml:space="preserve"><value>导出成功</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>导出失败</value></data>
+  <data name="HelpOpenFailed" xml:space="preserve"><value>无法打开帮助文档，请手动访问</value></data>
+</root>

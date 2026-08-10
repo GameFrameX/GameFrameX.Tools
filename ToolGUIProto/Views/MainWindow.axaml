@@ -1,85 +1,132 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:ToolGUI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="400"
+        xmlns:res="using:ToolGUI.Resources"
+        mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="640"
         x:Class="ToolGUI.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        CanResize="False"
+        Width="620"
+        Height="640"
+        MinWidth="560"
+        MinHeight="560"
+        CanResize="True"
         WindowState="Normal"
         Icon="/Assets/logo.ico"
-        Title="ToolGUIProto">
+        Title="{Binding Instance.WindowTitle, Source={x:Static res:Localization.Instance}}">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel />
-    </Design.DataContext>
-    <StackPanel Margin="20" Orientation="Vertical">
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-            <TextBlock Text="导出类型：" Width="100" VerticalAlignment="Center" />
-            <ComboBox Name="Mode" Width="300" VerticalAlignment="Center" SelectedIndex="1" SelectionChanged="Mode_OnSelectionChanged">
-                <ComboBoxItem>Server</ComboBoxItem>
-                <ComboBoxItem>Unity</ComboBoxItem>
-                <ComboBoxItem>Godot</ComboBoxItem>
-                <ComboBoxItem>TypeScript</ComboBoxItem>
-            </ComboBox>
-        </StackPanel>
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20" Orientation="Vertical">
 
-        <!-- 第二行 -->
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
-            <TextBlock Text="命名空间：" Width="100" VerticalAlignment="Center" />
-            <TextBox Name="NameSpace" Width="300" VerticalAlignment="Center" />
-        </StackPanel>
+            <!-- 语言切换：运行时切 Culture，触发 Localization 刷新所有绑定 -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <TextBlock Text="{Binding Instance.Language, Source={x:Static res:Localization.Instance}}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <ComboBox Name="LanguageSelector" Width="160" VerticalAlignment="Center" SelectionChanged="LanguageSelector_OnSelectionChanged" />
+            </StackPanel>
 
-        <!-- 第三行 -->
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
-            <TextBlock Text="协议文件路径：" Width="100" VerticalAlignment="Center" />
-            <TextBox Name="InputPath" Width="300" VerticalAlignment="Center" />
-        </StackPanel>
+            <!-- 导出类型：覆盖 CLI 全部 7 种模式 -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
+                <TextBlock Text="{Binding Instance.ExportType, Source={x:Static res:Localization.Instance}}" Width="140" VerticalAlignment="Center" />
+                <ComboBox Name="Mode" Width="420" VerticalAlignment="Center" SelectedIndex="1" SelectionChanged="Mode_OnSelectionChanged">
+                    <ComboBoxItem>Server</ComboBoxItem>
+                    <ComboBoxItem>Unity</ComboBoxItem>
+                    <ComboBoxItem>Godot</ComboBoxItem>
+                    <ComboBoxItem>TypeScript</ComboBoxItem>
+                    <ComboBoxItem>C++</ComboBoxItem>
+                    <ComboBoxItem>Lua</ComboBoxItem>
+                    <ComboBoxItem>Go</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
 
-        <!-- 第四行 -->
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
-            <TextBlock Text="导出文件路径：" Width="100" VerticalAlignment="Center" />
-            <TextBox Name="OutputPath" Width="300" VerticalAlignment="Center" />
-        </StackPanel>
+            <!-- 命名空间 -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
+                <TextBlock Text="{Binding Instance.Namespace, Source={x:Static res:Localization.Instance}}" Width="140" VerticalAlignment="Center" />
+                <TextBox Name="NameSpace" Width="420" VerticalAlignment="Center" />
+            </StackPanel>
 
-        <!-- 第五行 -->
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
-            <TextBlock Text="生成错误码?：" Width="100" VerticalAlignment="Center" />
-            <CheckBox Name="IsGenerateErrorCode" VerticalAlignment="Center" IsChecked="True" />
-            <StackPanel Width="200"></StackPanel>
-            <Button
-                Click="HelpButton_OnClick"
-                Content="帮助文档"
-                Foreground="DarkBlue" />
-        </StackPanel>
-        <StackPanel>
-            <Button
-                Click="Button_OnClick"
-                Content="导出"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center"
-                FontSize="30"
-                Foreground="White"
-                BorderThickness="2"
-                CornerRadius="10"
-                BorderBrush="Yellow"
-                Width="200"
-                Height="50"
-                Background="DarkGreen" />
-        </StackPanel>
-        <StackPanel>
-            <Border Background="AliceBlue" Width="400" Height="120" Margin="0,10,0,0">
+            <!-- 协议文件路径 -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
+                <TextBlock Text="{Binding Instance.InputPath, Source={x:Static res:Localization.Instance}}" Width="140" VerticalAlignment="Center" />
+                <TextBox Name="InputPath" Width="320" VerticalAlignment="Center" />
+                <Button Name="BrowseInputPath" Click="BrowseInputPath_OnClick" Content="{Binding Instance.Browse, Source={x:Static res:Localization.Instance}}" Width="80" Margin="10,0,0,0" />
+            </StackPanel>
+
+            <!-- 导出文件路径 -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
+                <TextBlock Text="{Binding Instance.OutputPath, Source={x:Static res:Localization.Instance}}" Width="140" VerticalAlignment="Center" />
+                <TextBox Name="OutputPath" Width="320" VerticalAlignment="Center" />
+                <Button Name="BrowseOutputPath" Click="BrowseOutputPath_OnClick" Content="{Binding Instance.Browse, Source={x:Static res:Localization.Instance}}" Width="80" Margin="10,0,0,0" />
+            </StackPanel>
+
+            <!-- using 语句 / 引用（C# / C++ / Go 模式使用）。
+                 UI 每行一条，数据层 LauncherOptions.UsingStatements 仍以 | 分隔（与 CLI 契约一致）。 -->
+            <StackPanel Orientation="Vertical" Margin="0,10,0,0">
+                <TextBlock Text="{Binding Instance.UsingStatements, Source={x:Static res:Localization.Instance}}" />
+                <TextBox Name="UsingStatements" Width="560" Height="100" AcceptsReturn="True" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+            </StackPanel>
+
+            <!-- import 路径前缀（TypeScript / Lua 模式使用） -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
+                <TextBlock Text="{Binding Instance.ImportPath, Source={x:Static res:Localization.Instance}}" Width="140" VerticalAlignment="Center" />
+                <TextBox Name="ImportPath" Width="420" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- 注释校验级别：none | container | member | all -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
+                <TextBlock Text="{Binding Instance.RequireComments, Source={x:Static res:Localization.Instance}}" Width="140" VerticalAlignment="Center" />
+                <ComboBox Name="RequireComments" Width="420" VerticalAlignment="Center" SelectedIndex="0">
+                    <ComboBoxItem>none</ComboBoxItem>
+                    <ComboBoxItem>container</ComboBoxItem>
+                    <ComboBoxItem>member</ComboBoxItem>
+                    <ComboBoxItem>all</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+
+            <!-- 布尔参数行 1：错误码 + Description 特性 -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
+                <TextBlock Text="{Binding Instance.GenerateErrorCode, Source={x:Static res:Localization.Instance}}" Width="140" VerticalAlignment="Center" />
+                <CheckBox Name="IsGenerateErrorCode" VerticalAlignment="Center" IsChecked="True" />
+                <TextBlock Text="{Binding Instance.GenerateDescription, Source={x:Static res:Localization.Instance}}" Width="180" VerticalAlignment="Center" Margin="20,0,0,0" />
+                <CheckBox Name="IsGenerateDescription" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- 布尔参数行 2：服务器模式（含 -s/_s 后缀文件 + 负模块 ID 文件） -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
+                <TextBlock Text="{Binding Instance.IsServer, Source={x:Static res:Localization.Instance}}" Width="140" VerticalAlignment="Center" />
+                <CheckBox Name="IsServer" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Instance.ServerModeHint, Source={x:Static res:Localization.Instance}}" VerticalAlignment="Center" Foreground="Gray" Margin="20,0,0,0" />
+            </StackPanel>
+
+            <!-- 操作区：导出 + 帮助 -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
+                <Button
+                    Name="ExportButton"
+                    Click="Button_OnClick"
+                    Content="{Binding Instance.Export, Source={x:Static res:Localization.Instance}}"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    FontSize="22"
+                    Foreground="White"
+                    BorderThickness="2"
+                    CornerRadius="10"
+                    BorderBrush="Yellow"
+                    Width="200"
+                    Height="48"
+                    Background="DarkGreen" />
+                <Button
+                    Click="HelpButton_OnClick"
+                    Content="{Binding Instance.Help, Source={x:Static res:Localization.Instance}}"
+                    Foreground="DarkBlue"
+                    Margin="20,0,0,0" />
+            </StackPanel>
+
+            <!-- 日志输出区 -->
+            <Border Background="AliceBlue" Width="560" Height="150" Margin="0,15,0,0">
                 <ScrollViewer>
                     <StackPanel>
-                        <TextBlock Name="ErrorLog" Foreground="Brown" VerticalAlignment="Center" />
+                        <TextBlock Name="ErrorLog" Foreground="Brown" VerticalAlignment="Center" TextWrapping="Wrap" />
                     </StackPanel>
                 </ScrollViewer>
             </Border>
         </StackPanel>
-    </StackPanel>
+    </ScrollViewer>
 </Window>
