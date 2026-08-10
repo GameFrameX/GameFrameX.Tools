@@ -1,3 +1,6 @@
+*.icns filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.ico filter=lfs diff=lfs merge=lfs -text
 *.icns !text !filter !merge !diff
 *.ico !text !filter !merge !diff
 *.png !text !filter !merge !diff
