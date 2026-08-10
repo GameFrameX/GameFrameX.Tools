@@ -362,6 +362,40 @@ docker run --rm \
 
 ---
 
+# GUI 도구 (ToolGUIProto)
+
+ProtoExport CLI를 래핑하는 크로스 플랫폼 Avalonia GUI로, 명령줄 인수를 직접 입력할 필요가 없습니다.
+
+## 기능
+
+- 7가지 내보내기 모드 (Server / Unity / Godot / TypeScript / C++ / Lua / Go) 드롭다운 전환
+- 모든 CLI 매개변수를 시각적으로 편집 (네임스페이스, using/import, 주석 검증 수준, 에러 코드, Description, 서버 모드)
+- 폴더 피커로 경로를 탐색하여 선택 (직접 입력 불필요)
+- 중국어 / 영어 UI를 실시간으로 전환
+- 설정 영속화 (모드별로 프로그램 디렉토리의 `Setting.json`에 저장, 기본값과 깊이 병합하여 무손실 업그레이드)
+- 실시간 로그 출력 패널
+
+## 빌드 및 게시
+
+```bash
+dotnet publish ToolGUIProto/ToolGUIProto.csproj -c Release -r win-x64 --no-self-contained
+# 기타 RID: osx-arm64 / osx-x64 / linux-x64 / linux-arm64
+```
+
+산출물은 단일 파일 실행 파일입니다 (런타임을 포함하지 않으므로 대상 머신에 .NET 10 런타임 사전 설치가 필요합니다).
+
+## 사용 방법
+
+1. 앱을 실행합니다
+2. 내보내기 모드를 선택합니다
+3. 입력/출력 경로를 입력하거나 탐색하여 선택합니다
+4. 내보내기를 클릭합니다
+5. 로그 패널을 확인합니다
+
+GUI는 CLI와 기능적으로 동등합니다. CI/자동화 시나리오에서는 여전히 CLI 또는 Docker 사용을 권장합니다.
+
+---
+
 # 빠른 내보내기 스크립트
 
 `Protobuf/` 디렉토리에 사전 설정된 내보내기 스크립트가 제공됩니다:

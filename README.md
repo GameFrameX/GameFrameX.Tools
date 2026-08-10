@@ -362,6 +362,40 @@ docker run --rm \
 
 ---
 
+# GUI Tool (ToolGUIProto)
+
+A cross-platform Avalonia GUI that wraps the ProtoExport CLI, so you can generate code without typing command-line arguments by hand.
+
+## Features
+
+- Switch between 7 export modes (Server / Unity / Godot / TypeScript / C++ / Lua / Go) from a dropdown
+- Edit every CLI parameter visually (namespace, using/import, comment validation level, error codes, Description, server mode)
+- Browse and pick paths with the folder picker (no more typing paths by hand)
+- Switch the UI between Chinese and English on the fly
+- Persistent configuration (saved per mode to `Setting.json` in the program directory, deep-merged with defaults for lossless upgrades)
+- Real-time log output panel
+
+## Build & Publish
+
+```bash
+dotnet publish ToolGUIProto/ToolGUIProto.csproj -c Release -r win-x64 --no-self-contained
+# Other RIDs: osx-arm64 / osx-x64 / linux-x64 / linux-arm64
+```
+
+The output is a single-file executable (runtime not included; the target machine needs the .NET 10 runtime preinstalled).
+
+## Usage
+
+1. Launch the app
+2. Select the export mode
+3. Fill in or browse for the input/output paths
+4. Click Export
+5. Check the log panel
+
+The GUI is functionally equivalent to the CLI; for CI/automation scenarios, the CLI or Docker is still recommended.
+
+---
+
 # Quick Export Scripts
 
 Pre-built scripts are available in the `Protobuf/` directory:
