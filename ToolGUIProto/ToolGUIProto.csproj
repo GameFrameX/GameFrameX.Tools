@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -9,28 +9,32 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <LangVersion>10</LangVersion>
     <PublishSingleFile>true</PublishSingleFile>
-    <PublishTrimmed>true</PublishTrimmed>
+    <!-- 移除 PublishTrimmed：ProtoBufMessageHandler 用 Assembly.GetTypes()+Activator.CreateInstance 反射发现 Helper，
+         trim 会裁剪掉这些类型导致运行时 MissingMethodException；且 PublishTrimmed 强制 self-contained，
+         framework-dependent 单文件发布会报 NETSDK1102。工具场景体积不敏感，保留 PublishSingleFile 即可。 -->
+    <!-- 国际化：从 resx 生成强类型类 + 为非默认 resx 生成附属程序集（satellite assemblies）。
+         默认 Strings.resx 为中性资源；Strings.<culture>.resx 自动产出 <culture>/ToolGUIProto.resources.dll。 -->
+    <EmbeddedResourceUseDependentUpon>false</EmbeddedResourceUseDependentUpon>
+    <GenerateSatelliteAssemblies>true</GenerateSatelliteAssemblies>
+    <!-- 单文件发布默认只保留当前 UI Culture 的附属程序集，显式列出中/英文确保两种语言在发布产物中都可用。 -->
+    <SatelliteResourceLanguages>zh-CN;zh;en</SatelliteResourceLanguages>
   </PropertyGroup>
-
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.2.1" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.2.1" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.1" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.1" />
-    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Include="Avalonia.Diagnostics" Version="11.2.1">
-      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ProtoExport\ProtoExport.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ToolGUIProto.Tests" />
   </ItemGroup>
 </Project>
