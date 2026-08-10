@@ -1,8 +1,9 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ToolGUI.App"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Dark">
+             <!-- 设计基调:现代深色(Fluent Dark)。所有控件颜色走 semantic token,
+                  跟随主题,不写死 hex,以便后续 Light/Dark 切换无侵入。 -->
 
     <Application.Styles>
         <FluentTheme />

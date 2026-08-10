@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Resources;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace ToolGUI.Resources;
 
@@ -43,6 +44,14 @@ public sealed class Localization : INotifyPropertyChanged
     /// 切换 UI Culture 并通知所有绑定刷新。
     /// 无效或缺失的 culture 静默回退到默认 resx（中性资源）。
     /// </summary>
+    /// <remarks>
+    /// 两个关键修正：
+    /// 1. <see cref="CultureInfo.CurrentUICulture"/> 必须显式设置当前线程的值——
+    ///    <see cref="CultureInfo.DefaultThreadCurrentUICulture"/> 只影响之后新建的线程，
+    ///    不会改变当前线程的 CurrentUICulture，导致 ResourceManager.GetString 仍读旧 culture。
+    /// 2. Avalonia 绑定系统不像 WPF 那样把空属性名当作"全部属性已变"——
+    ///    必须对每个具名属性显式触发 PropertyChanged，绑定才会重新求值。
+    /// </remarks>
     public void SetCulture(string cultureCode)
     {
         if (string.IsNullOrWhiteSpace(cultureCode))
@@ -52,15 +61,42 @@ public sealed class Localization : INotifyPropertyChanged
         try
         {
             var culture = CultureInfo.GetCultureInfo(cultureCode);
+            // 当前线程 + 未来新线程都设，确保 ResourceManager.GetString 读到新 culture。
+            Thread.CurrentThread.CurrentUICulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
-            // 用一个空属性名通知，触发所有绑定重新求值（最简单的全量刷新）
-            OnPropertyChanged(string.Empty);
+
+            // 对每个本地化属性显式触发 PropertyChanged，让 XAML 绑定重新求值。
+            // （Avalonia 不支持用空字符串 property name 广播。）
+            foreach (var name in LocalizedPropertyNames)
+            {
+                OnPropertyChanged(name);
+            }
         }
         catch (CultureNotFoundException)
         {
             // 静默忽略：保持当前语言不变。
         }
     }
+
+    /// <summary>
+    /// 所有本地化字符串属性名。用于 SetCulture 时批量触发 PropertyChanged。
+    /// 新增属性时务必在此同步登记，否则切换语言后该属性不会刷新。
+    /// </summary>
+    private static readonly string[] LocalizedPropertyNames =
+    {
+        nameof(WindowTitle), nameof(ExportType), nameof(Namespace), nameof(InputPath),
+        nameof(OutputPath), nameof(UsingStatements), nameof(ImportPath), nameof(RequireComments),
+        nameof(GenerateErrorCode), nameof(GenerateDescription), nameof(IsServer), nameof(ServerModeHint),
+        nameof(Export), nameof(Help), nameof(Browse), nameof(Language),
+        nameof(PickInputFolder), nameof(PickOutputFolder),
+        nameof(ErrUnsupportedMode), nameof(ErrInputPathEmpty), nameof(ErrOutputPathEmpty),
+        nameof(ErrNamespaceEmpty), nameof(ExportSuccess), nameof(ExportFailed), nameof(HelpOpenFailed),
+        nameof(AppSubtitle), nameof(ExportHint), nameof(LogTitle),
+        nameof(GroupExportType), nameof(GroupPaths), nameof(GroupGeneration),
+        nameof(UsingStatementsHint),
+        nameof(GenerateErrorCodeTip), nameof(GenerateDescriptionTip), nameof(IsServerTip), nameof(RequireCommentsTip),
+        nameof(ModeTip), nameof(InputPathTip), nameof(OutputPathTip), nameof(NamespaceTip), nameof(ImportPathTip),
+    };
 
     /// <summary>
     /// 取本地化字符串。找不到时返回 key 本身（便于发现遗漏的翻译条目）。
@@ -100,6 +136,22 @@ public sealed class Localization : INotifyPropertyChanged
     public string ExportSuccess => this[nameof(ExportSuccess)];
     public string ExportFailed => this[nameof(ExportFailed)];
     public string HelpOpenFailed => this[nameof(HelpOpenFailed)];
+    public string AppSubtitle => this[nameof(AppSubtitle)];
+    public string ExportHint => this[nameof(ExportHint)];
+    public string LogTitle => this[nameof(LogTitle)];
+    public string GroupExportType => this[nameof(GroupExportType)];
+    public string GroupPaths => this[nameof(GroupPaths)];
+    public string GroupGeneration => this[nameof(GroupGeneration)];
+    public string UsingStatementsHint => this[nameof(UsingStatementsHint)];
+    public string GenerateErrorCodeTip => this[nameof(GenerateErrorCodeTip)];
+    public string GenerateDescriptionTip => this[nameof(GenerateDescriptionTip)];
+    public string IsServerTip => this[nameof(IsServerTip)];
+    public string RequireCommentsTip => this[nameof(RequireCommentsTip)];
+    public string ModeTip => this[nameof(ModeTip)];
+    public string InputPathTip => this[nameof(InputPathTip)];
+    public string OutputPathTip => this[nameof(OutputPathTip)];
+    public string NamespaceTip => this[nameof(NamespaceTip)];
+    public string ImportPathTip => this[nameof(ImportPathTip)];
 
     private void OnPropertyChanged([CallerMemberName] string name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
