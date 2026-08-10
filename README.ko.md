@@ -24,6 +24,27 @@
 
 언어별 내보내기 Proto 프로토콜 코드 생성 도구입니다. C#, TypeScript를 지원하며 C++과 Lua는 개발 중입니다.
 
+# 빌드
+
+`ProtoExport` 프로젝트는 빌드 산출물을 **고정된 형제 경로**인 `../Protobuf/Tools/`(저장소 루트 기준, 즉 `<워크스페이스>/Protobuf/Tools/`)로 출력하도록 설정되어 있습니다. 경로는 `.csproj` 위치를 `$(MSBuildThisFileDirectory)`로 기준 삼아 고정되므로, `Tools`와 `Protobuf`를 형제 디렉토리로 클론한 모든 머신에서 동일하게 해석됩니다.
+
+이 고정 경로는 `Protobuf` 저장소의 `Proto2*Export.{sh,bat}` 스크립트(예: `dotnet ./Tools/ProtoExport.dll ...`)가 소비하며, DLL은 `Protobuf/Tools/ProtoExport.dll`에 있을 것으로 기대합니다.
+
+```bash
+# Tools/ProtoExport 디렉토리(또는 저장소 루트)에서 실행
+dotnet build ProtoExport/ProtoExport.csproj -c Release
+# 산출물 위치: ../Protobuf/Tools/ProtoExport.dll (TFM/RID 하위 디렉토리 없음)
+```
+
+고정 경로를 가능하게 하는 빌드 속성(`ProtoExport/ProtoExport.csproj`에 설정):
+
+- `OutputPath` = `$(MSBuildThisFileDirectory)../../Protobuf/Tools/` — Debug/Release 공통 출력 디렉토리.
+- `AppendTargetFrameworkToOutputPath` = `false` — `net10.0/` 하위 디렉토리 생성 안 함.
+- `AppendRuntimeIdentifierToOutputPath` = `false` — `win-x64/`, `linux-arm64/` 하위 디렉토리 생성 안 함.
+
+> SDK 기본 `output-paths` target에 덮어씌워지지 않도록 `OutDir` 대신 `OutputPath`를 사용합니다.
+
+
 # Docker
 
 `linux/amd64` 및 `linux/arm64` 용 Docker 이미지가 제공됩니다.

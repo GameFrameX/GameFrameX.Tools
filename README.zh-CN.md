@@ -24,6 +24,27 @@
 
 按语言导出的 Proto 协议代码生成工具。支持 C#、TypeScript，C++ 和 Lua 正在开发中。
 
+# 构建
+
+`ProtoExport` 项目配置为将构建产物输出到**固定的同级路径**：`../Protobuf/Tools/`（相对于仓库根，即 `<工作区>/Protobuf/Tools/`）。路径以 `.csproj` 所在位置为锚点通过 `$(MSBuildThisFileDirectory)` 定位，任何将 `Tools` 与 `Protobuf` 克隆为同级目录的机器都能正确解析。
+
+该固定路径供 `Protobuf` 仓库中的 `Proto2*Export.{sh,bat}` 脚本消费（如 `dotnet ./Tools/ProtoExport.dll ...`），脚本期望 DLL 位于 `Protobuf/Tools/ProtoExport.dll`。
+
+```bash
+# 在 Tools/ProtoExport 目录（或仓库根）执行
+dotnet build ProtoExport/ProtoExport.csproj -c Release
+# 产物落到：../Protobuf/Tools/ProtoExport.dll（不含 TFM/RID 子目录）
+```
+
+使固定路径生效的构建属性（定义于 `ProtoExport/ProtoExport.csproj`）：
+
+- `OutputPath` = `$(MSBuildThisFileDirectory)../../Protobuf/Tools/` — Debug/Release 共用同一输出目录。
+- `AppendTargetFrameworkToOutputPath` = `false` — 不生成 `net10.0/` 子目录。
+- `AppendRuntimeIdentifierToOutputPath` = `false` — 不生成 `win-x64/`、`linux-arm64/` 子目录。
+
+> 使用 `OutputPath` 而非 `OutDir`，以避免被 SDK 默认的 `output-paths` target 覆盖。
+
+
 # Docker
 
 预构建的 Docker 镜像支持 `linux/amd64` 和 `linux/arm64` 架构。
