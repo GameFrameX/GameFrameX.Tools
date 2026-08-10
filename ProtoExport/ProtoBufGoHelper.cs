@@ -61,7 +61,7 @@ internal sealed class ProtoBufGoHelper : IProtoGenerateHelper
             }
         }
 
-        Console.WriteLine($"Generate File:{messageInfoList.OutputPath + ".go"}");
+        ExportLogger.WriteLine($"Generate File:{messageInfoList.OutputPath + ".go"}");
         File.WriteAllText(messageInfoList.OutputPath + ".go", sb.ToString(), Encoding.UTF8);
     }
 
@@ -204,7 +204,7 @@ internal sealed class ProtoBufGoHelper : IProtoGenerateHelper
 
         sb.AppendLine("}");
 
-        Console.WriteLine($"Generate File:{launcherOptions.OutputPath + "/message_register.go"}");
+        ExportLogger.WriteLine($"Generate File:{launcherOptions.OutputPath + "/message_register.go"}");
         File.WriteAllText(launcherOptions.OutputPath + "/message_register.go", sb.ToString(), Encoding.UTF8);
     }
 }

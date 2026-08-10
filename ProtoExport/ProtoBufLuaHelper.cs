@@ -46,7 +46,7 @@ internal sealed class ProtoBufLuaHelper : IProtoGenerateHelper
         }
 
         sb.AppendLine($"return {moduleName}");
-        Console.WriteLine($"Generate File:{messageInfoList.OutputPath + ".lua"}");
+        ExportLogger.WriteLine($"Generate File:{messageInfoList.OutputPath + ".lua"}");
         File.WriteAllText(messageInfoList.OutputPath + ".lua", sb.ToString(), Encoding.UTF8);
     }
 
@@ -171,7 +171,7 @@ internal sealed class ProtoBufLuaHelper : IProtoGenerateHelper
         sb.AppendLine("end");
         sb.AppendLine();
         sb.AppendLine("return ProtoMessageRegister");
-        Console.WriteLine($"Generate File:{launcherOptions.OutputPath + "/ProtoMessageRegister.lua"}");
+        ExportLogger.WriteLine($"Generate File:{launcherOptions.OutputPath + "/ProtoMessageRegister.lua"}");
         File.WriteAllText(launcherOptions.OutputPath + "/ProtoMessageRegister.lua", sb.ToString(), Encoding.UTF8);
     }
 }

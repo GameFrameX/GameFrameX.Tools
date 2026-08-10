@@ -65,7 +65,7 @@ internal sealed class ProtoBufCppHelper : IProtoGenerateHelper
         }
 
         sb.AppendLine();
-        Console.WriteLine($"Generate File:{messageInfoList.OutputPath + ".h"}");
+        ExportLogger.WriteLine($"Generate File:{messageInfoList.OutputPath + ".h"}");
         File.WriteAllText(messageInfoList.OutputPath + ".h", sb.ToString(), Encoding.UTF8);
     }
 
