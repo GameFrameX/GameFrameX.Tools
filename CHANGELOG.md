@@ -1,3 +1,28 @@
+## [0.4.0] - 2026-08-10
+
+### Documentation
+
+* 同步多语言 README 新增 ToolGUIProto 章节
+* 同步 README 中 ToolGUIProto → ProtoExporterGUI 重命名
+
+### Features
+
+* 抽出日志输出网关
+* 引入中英文本地化与覆盖全部 7 种模式的导出 GUI
+* 重设计导出 GUI 为分组卡片 + 深色主题
+* 重命名项目为 ProtoExporterGUI 并新增 MacOS Dock 图标
+* 新增 ProtoExporterGUI.Tests 单元测试工程
+
+### Miscellaneous Tasks
+
+* 删除重命名遗留的 ToolGUIProto 旧目录
+
+### build
+
+* 升级 GameFrameX.Foundation.Options 到 2.8.3
+* 升级 Avalonia 12.1.1、移除冗余依赖与模板空壳
+* 注册 ToolGUIProto.Tests 项目并忽略运行时配置
+* 适配 ProtoExporterGUI 重命名的仓库级配置
 ## [0.3.6] - 2026-08-10
 
 ### Documentation
