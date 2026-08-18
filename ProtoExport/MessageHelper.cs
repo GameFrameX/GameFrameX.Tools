@@ -67,8 +67,24 @@ public static partial class MessageHelper
         return messageInfo;
     }
 
+    /// <summary>
+    /// 当 <c>true</c> 时，<see cref="Parse"/> 内部不再自动给 <c>Opcode</c> 赋值；
+    /// 调用方需自行通过 <see cref="Persistence.MessageIdAllocator"/> 等机制分配 SubId。
+    /// <para>
+    /// 进程级静态标志位：导出器进程模型为单次命令行（CLI）/ 单实例 GUI，不会并发触发两轮解析。
+    /// 若未来并发场景出现，需改为参数注入（<see cref="Parse"/> 接收 skipAutoAssign 形参）。
+    /// </para>
+    /// </summary>
+    public static bool SkipAutoAssignOpcode { get; set; }
+
     private static void MessageIdHandler(List<MessageInfo> operationCodeInfos, int start)
     {
+        if (SkipAutoAssignOpcode)
+        {
+            // 关闭旧的自增分配。Opcode==0 的消息将由外部 MessageIdAllocator 处理。
+            return;
+        }
+
         foreach (var operationCodeInfo in operationCodeInfos)
         {
             if (operationCodeInfo.IsMessage)
