@@ -77,6 +77,12 @@ public sealed class LauncherOptions
     public string RequireComments { get; set; }
 
     /// <summary>
+    /// 子 ID 持久化 lock 文件路径。空字符串表示禁用 lock 模式（保留旧的自增分配行为，向后兼容）。
+    /// </summary>
+    [Option("messageIdLockPath", Required = false, DefaultValue = "", Description = "子 ID 持久化 lock 文件路径，留空则禁用 lock 模式（向后兼容旧行为）")]
+    public string MessageIdLockPath { get; set; }
+
+    /// <summary>
     /// 解析后的注释校验级别
     /// </summary>
     public CommentValidationLevel CommentValidation

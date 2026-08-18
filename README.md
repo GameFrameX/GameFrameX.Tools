@@ -157,6 +157,76 @@ The [TestProtos/](TestProtos/) directory contains example proto files covering a
 
 ---
 
+# 子 ID 稳定性（lock 文件）
+
+## 问题：行序自增会破坏协议
+
+旧版本的 `MessageIdHandler` 按 proto 文件内的**行序**自增分配 SubId（每个模块从 10 起）。这意味着 proto 文件的任何结构性编辑都会导致该模块的 SubId 全线平移：
+
+| 操作 | 后果 |
+|------|------|
+| 中间插入一条消息 | 其后所有消息的 SubId +1 |
+| 调整 message 定义顺序 | 对应消息的 SubId 互换 |
+| 删除一条消息 | 其后所有消息的 SubId -1 |
+
+SubId 是运行时网络协议的寻址键（`MessageID = (Module << 16) | SubId`），一旦漂移，C# / C++ / Go / Lua / TypeScript 各端生成的注册表会与线上旧客户端**整体错位**：旧包携带的历史 Opcode 会被解析成另一条消息。行序只是文本属性，不应参与协议语义。
+
+## lock 机制
+
+启用后，`MessageIdCoordinator` 会把 `(Module, 消息名) → SubId` 的映射持久化到一份 JSON lock 文件（`proto-message-ids.lock.json`），分配决策只看名字、不看行序：
+
+| 场景 | 分配决策 |
+|------|----------|
+| 消息名已在 lock 中 | **沿用**历史 SubId，永不改写 |
+| 消息名不在 lock 中 | **max(已用号) + 1**，不填洞 |
+| lock 中存在但本次 proto 缺失（删除/重命名） | 移入 `retired` 段，**永不回收** |
+
+关键规则：
+
+- `schemaVersion`：lock 文件带 schema 版本号，版本不兼容时导出器直接报错，绝不静默重排
+- 每个模块（`option module = <id>`）**独立计数**，跨模块 ID 空间不互通
+- SubId 合法范围 `1..65535`（16 位），模块内起点为 `10`
+- 序列化按 key 字典序输出，diff 只含真实变更，便于 PR review
+- lock 文件写入为原子操作（先写 `.tmp` 再 rename）
+
+## 迁移步骤
+
+```bash
+# 1. 一次性生成种子：把「当前这一刻」的 Opcode 冻结为 lock 起点
+bash tools/migrate-message-id-lock.sh
+#    等价 CLI：
+#    dotnet ProtoExport.dll --inputPath <protos> --outputPath <out> \
+#      --mode csharp --messageIdLockPath ./proto-message-ids.lock.json --regenerate-lock
+
+# 2. 检查并提交 lock 文件进 git
+git add proto-message-ids.lock.json && git commit -m "chore(proto): freeze message id lock"
+
+# 3. 之后所有导出（本地 + CI + Docker）都必须传 lock 路径
+dotnet ProtoExport.dll ... --messageIdLockPath ./proto-message-ids.lock.json
+```
+
+> **注意**：迁移**不会回滚历史漂移**。旧版本下行序自增造成的错位已经发生，种子只是「冻结当前这一刻」，让分配从此稳定。若线上已存在漂移问题，需要另行做协议对齐。
+
+相关 CLI 参数：
+
+| 参数 | 说明 |
+|------|------|
+| `--messageIdLockPath` | lock 文件路径；**留空则禁用 lock 模式**，回退旧的行序自增行为（向后兼容） |
+| `--print-lock` | 只读并打印 lock 文件内容，不触发导出（review 用） |
+| `--regenerate-lock` | 把当前解析出的 Opcode 序列化为 lock 种子（一次性迁移用） |
+
+## merge conflict 处理
+
+两个人在同一模块并发新增消息时，会各自算出相同的 `max+1`，合并时 lock 文件必然冲突。处理方式：
+
+1. 取任意一边的 lock 内容（冲突双方内容等价，只是条目排序不同）
+2. 重跑一次导出器（带 `--messageIdLockPath`），让后合入的新消息自动重新分配下一个可用号
+3. 重新提交 lock 文件
+
+**这是特性不是缺陷**：冲突显式化保证了「一号永不二主」——静默自动合并反而可能让两条消息共享同一个 SubId，在运行时造成解析错位。`retired` 段同理：被删除/重命名的旧号永久占用，新消息只能拿 `max+1`。
+
+---
+
 # Parameter Reference
 
 ## Core Parameters
