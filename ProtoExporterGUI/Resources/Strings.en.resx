@@ -69,4 +69,20 @@
   <data name="OutputPathTip" xml:space="preserve"><value>Output directory for generated code. Cleared and rebuilt on every export (clean build semantics) — do not point at a directory holding other files.</value></data>
   <data name="NamespaceTip" xml:space="preserve"><value>Namespace/package name for generated code. Required for C# / C++ / Go; ignored by TypeScript (uses proto package name); ignored by Lua.</value></data>
   <data name="ImportPathTip" xml:space="preserve"><value>TypeScript / Lua modes only. Path prefix for generated import statements, e.g. ../network/ or ./network/.</value></data>
+
+  <!-- Sub-ID lock status panel: observation only, never affects export decisions -->
+  <data name="GroupLockStatus" xml:space="preserve"><value>Sub-ID lock status</value></data>
+  <data name="LockFilePath" xml:space="preserve"><value>Lock file path:</value></data>
+  <data name="LockStateFound" xml:space="preserve"><value>Loaded</value></data>
+  <data name="LockStateNotFound" xml:space="preserve"><value>Not found</value></data>
+  <data name="LockFileLastWrite" xml:space="preserve"><value>Last modified:</value></data>
+  <data name="LockModuleColumn" xml:space="preserve"><value>Module</value></data>
+  <data name="LockModuleNameColumn" xml:space="preserve"><value>Module name</value></data>
+  <data name="LockMessageCountColumn" xml:space="preserve"><value>Messages</value></data>
+  <data name="LockRetiredCountColumn" xml:space="preserve"><value>Retired</value></data>
+  <data name="LockEmptyModules" xml:space="preserve"><value>(lock file contains no module entries)</value></data>
+  <data name="LockRefresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="LockLoadFailed" xml:space="preserve"><value>Failed to read lock file</value></data>
+  <data name="LockSummaryTemplate" xml:space="preserve"><value>Lock changed: {0} module(s), {1} newly assigned</value></data>
+  <data name="LockPathEmpty" xml:space="preserve"><value>Not set (auto-increment mode, no lock file)</value></data>
 </root>

@@ -96,6 +96,10 @@ public sealed class Localization : INotifyPropertyChanged
         nameof(UsingStatementsHint),
         nameof(GenerateErrorCodeTip), nameof(GenerateDescriptionTip), nameof(IsServerTip), nameof(RequireCommentsTip),
         nameof(ModeTip), nameof(InputPathTip), nameof(OutputPathTip), nameof(NamespaceTip), nameof(ImportPathTip),
+        nameof(GroupLockStatus), nameof(LockFilePath), nameof(LockStateFound), nameof(LockStateNotFound),
+        nameof(LockFileLastWrite), nameof(LockModuleColumn), nameof(LockModuleNameColumn), nameof(LockMessageCountColumn),
+        nameof(LockRetiredCountColumn), nameof(LockEmptyModules), nameof(LockRefresh),
+        nameof(LockLoadFailed), nameof(LockSummaryTemplate), nameof(LockPathEmpty),
     };
 
     /// <summary>
@@ -152,6 +156,20 @@ public sealed class Localization : INotifyPropertyChanged
     public string OutputPathTip => this[nameof(OutputPathTip)];
     public string NamespaceTip => this[nameof(NamespaceTip)];
     public string ImportPathTip => this[nameof(ImportPathTip)];
+    public string GroupLockStatus => this[nameof(GroupLockStatus)];
+    public string LockFilePath => this[nameof(LockFilePath)];
+    public string LockStateFound => this[nameof(LockStateFound)];
+    public string LockStateNotFound => this[nameof(LockStateNotFound)];
+    public string LockFileLastWrite => this[nameof(LockFileLastWrite)];
+    public string LockModuleColumn => this[nameof(LockModuleColumn)];
+    public string LockModuleNameColumn => this[nameof(LockModuleNameColumn)];
+    public string LockMessageCountColumn => this[nameof(LockMessageCountColumn)];
+    public string LockRetiredCountColumn => this[nameof(LockRetiredCountColumn)];
+    public string LockEmptyModules => this[nameof(LockEmptyModules)];
+    public string LockRefresh => this[nameof(LockRefresh)];
+    public string LockLoadFailed => this[nameof(LockLoadFailed)];
+    public string LockSummaryTemplate => this[nameof(LockSummaryTemplate)];
+    public string LockPathEmpty => this[nameof(LockPathEmpty)];
 
     private void OnPropertyChanged([CallerMemberName] string name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
