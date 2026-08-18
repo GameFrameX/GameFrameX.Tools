@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:res="using:ProtoExporterGUI.Resources"
+        xmlns:models="using:ProtoExporterGUI.Models"
         mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="720"
         x:Class="ProtoExporterGUI.Views.MainWindow"
         Width="720"
@@ -300,6 +301,74 @@
                             </StackPanel>
                         </StackPanel>
 
+                    </StackPanel>
+                </Border>
+
+                <!-- 子 ID lock 状态组:只读观测面板。数据来自 MessageIdLockStore.Load,不参与导出决策 -->
+                <Border Classes="sectionCard">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Classes="sectionHeader" VerticalAlignment="Center"
+                                       Text="{Binding Instance.GroupLockStatus, Source={x:Static res:Localization.Instance}}" />
+                            <Button Grid.Column="1"
+                                    Name="LockRefreshButton"
+                                    Click="LockRefreshButton_OnClick"
+                                    Content="{Binding Instance.LockRefresh, Source={x:Static res:Localization.Instance}}"
+                                    Classes="subtle"
+                                    VerticalAlignment="Center" />
+                        </Grid>
+
+                        <!-- lock 文件路径 + 存在状态文字 -->
+                        <Grid ColumnDefinitions="120,*,Auto">
+                            <TextBlock Grid.Column="0" Classes="fieldLabel"
+                                       VerticalAlignment="Top"
+                                       Text="{Binding Instance.LockFilePath, Source={x:Static res:Localization.Instance}}" />
+                            <TextBlock Grid.Column="1" Name="LockPathText"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Grid.Column="2" Name="LockStateText"
+                                       Margin="8,0,0,0"
+                                       VerticalAlignment="Top"
+                                       FontSize="11"
+                                       FontWeight="SemiBold" />
+                        </Grid>
+
+                        <!-- 最后修改时间 -->
+                        <Grid ColumnDefinitions="120,*">
+                            <TextBlock Grid.Column="0" Classes="fieldLabel"
+                                       Text="{Binding Instance.LockFileLastWrite, Source={x:Static res:Localization.Instance}}" />
+                            <TextBlock Grid.Column="1" Name="LockLastWriteText"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+                        </Grid>
+
+                        <!-- 逐模块统计表:模块号 / 模块名 / 消息数 / 墓碑数 -->
+                        <StackPanel Name="LockTableSection" Spacing="4">
+                            <Grid ColumnDefinitions="80,*,100,100" Margin="0,0,0,4">
+                                <TextBlock Grid.Column="0" Name="LockModuleHeader" Classes="helperText" Margin="0" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Name="LockModuleNameHeader" Classes="helperText" Margin="0" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="2" Name="LockMessageCountHeader" Classes="helperText" Margin="0" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="3" Name="LockRetiredCountHeader" Classes="helperText" Margin="0" FontWeight="SemiBold" />
+                            </Grid>
+                            <ItemsControl Name="LockModuleList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:LockModuleRow">
+                                        <Grid ColumnDefinitions="80,*,100,100" Margin="0,2">
+                                            <TextBlock Grid.Column="0" Text="{Binding ModuleKey}" FontFamily="Consolas,Menlo,Monaco,monospace" />
+                                            <TextBlock Grid.Column="1" Text="{Binding ModuleName}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="2" Text="{Binding MessageCount}" />
+                                            <TextBlock Grid.Column="3" Text="{Binding RetiredCount}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                        <!-- 占位/错误提示:表格 section 隐藏时仍需可见,故放在其外 -->
+                        <TextBlock Name="LockPlaceholderRow" Classes="helperText" TextWrapping="Wrap" />
+
+                        <!-- 导出结束后的本次变更提示:从日志解析,不重新计算 -->
+                        <TextBlock Name="LockSummaryText" Classes="helperText" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
 

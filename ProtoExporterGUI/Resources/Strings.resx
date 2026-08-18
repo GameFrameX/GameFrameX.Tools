@@ -73,4 +73,20 @@
   <data name="OutputPathTip" xml:space="preserve"><value>生成代码的输出目录。每次导出会清空并重建该目录（clean build 语义），请勿指向含其他文件的目录。</value></data>
   <data name="NamespaceTip" xml:space="preserve"><value>生成代码的命名空间/包名。C# / C++ / Go 模式必填；TypeScript 模式忽略（用 proto package 名）；Lua 模式忽略。</value></data>
   <data name="ImportPathTip" xml:space="preserve"><value>仅 TypeScript / Lua 模式有效。生成 import 语句的路径前缀，如 ../network/ 或 ./network/。</value></data>
+
+  <!-- 子 ID lock 状态面板：只做观测显示，不参与导出决策 -->
+  <data name="GroupLockStatus" xml:space="preserve"><value>子 ID lock 状态</value></data>
+  <data name="LockFilePath" xml:space="preserve"><value>lock 文件路径：</value></data>
+  <data name="LockStateFound" xml:space="preserve"><value>已加载</value></data>
+  <data name="LockStateNotFound" xml:space="preserve"><value>未找到</value></data>
+  <data name="LockFileLastWrite" xml:space="preserve"><value>最后修改：</value></data>
+  <data name="LockModuleColumn" xml:space="preserve"><value>模块号</value></data>
+  <data name="LockModuleNameColumn" xml:space="preserve"><value>模块名</value></data>
+  <data name="LockMessageCountColumn" xml:space="preserve"><value>消息数</value></data>
+  <data name="LockRetiredCountColumn" xml:space="preserve"><value>墓碑数</value></data>
+  <data name="LockEmptyModules" xml:space="preserve"><value>（lock 文件中暂无模块条目）</value></data>
+  <data name="LockRefresh" xml:space="preserve"><value>刷新</value></data>
+  <data name="LockLoadFailed" xml:space="preserve"><value>lock 文件读取失败</value></data>
+  <data name="LockSummaryTemplate" xml:space="preserve"><value>lock 变更：模块 {0} 个，新增 {1} 条</value></data>
+  <data name="LockPathEmpty" xml:space="preserve"><value>未设置（自增模式，不使用 lock 文件）</value></data>
 </root>
