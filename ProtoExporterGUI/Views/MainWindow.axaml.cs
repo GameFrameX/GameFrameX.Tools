@@ -41,6 +41,7 @@ public partial class MainWindow : Window
         InitLanguageSelector();
         ApplyOptionsToUI(SettingData.GetOptions(this.Mode.SelectionBoxItem?.ToString()));
         UpdateModeSpecificVisibility(this.Mode.SelectionBoxItem?.ToString());
+        RefreshLockPanel();
         _initialized = true;
     }
 
@@ -64,6 +65,81 @@ public partial class MainWindow : Window
         this.NameSpaceRow.IsVisible = showNamespace;
         this.UsingStatementsRow.IsVisible = showNamespace;
         this.ImportPathRow.IsVisible = showImportPath;
+    }
+
+    /// <summary>
+    /// 刷新子 ID lock 状态面板。读取当前模式对应的 MessageIdLockPath 并渲染观测快照。
+    /// 面板只做观测显示,不参与导出决策;任何读取失败都显示为错误状态而非抛异常。
+    /// </summary>
+    private void RefreshLockPanel()
+    {
+        var modeKey = this.Mode?.SelectionBoxItem?.ToString();
+        var options = SettingData.GetOptions(modeKey);
+        var lockPath = options?.MessageIdLockPath;
+
+        // 列头文案:语言切换后由本方法整体重刷,无需单独响应 Culture 变化
+        this.LockModuleHeader.Text = Localization.Instance.LockModuleColumn;
+        this.LockModuleNameHeader.Text = Localization.Instance.LockModuleNameColumn;
+        this.LockMessageCountHeader.Text = Localization.Instance.LockMessageCountColumn;
+        this.LockRetiredCountHeader.Text = Localization.Instance.LockRetiredCountColumn;
+
+        this.LockPathText.Text = string.IsNullOrWhiteSpace(lockPath)
+            ? Localization.Instance.LockPathEmpty
+            : lockPath;
+
+        var data = LockPanelData.Observe(lockPath);
+        RenderLockPanel(data);
+    }
+
+    /// <summary>
+    /// 把观测快照渲染到面板控件。按状态切换状态文字、表格可见性与占位文案。
+    /// </summary>
+    private void RenderLockPanel(LockPanelData data)
+    {
+        switch (data.State)
+        {
+            case LockPanelData.LoadState.Found:
+                this.LockStateText.Text = Localization.Instance.LockStateFound;
+                break;
+            case LockPanelData.LoadState.Failed:
+                this.LockStateText.Text = Localization.Instance.LockLoadFailed;
+                break;
+            default:
+                this.LockStateText.Text = Localization.Instance.LockStateNotFound;
+                break;
+        }
+
+        var lastWrite = data.FormatLastWriteTime("yyyy-MM-dd HH:mm:ss");
+        this.LockLastWriteText.Text = lastWrite ?? "—";
+
+        this.LockModuleList.Items.Clear();
+        foreach (var row in data.Modules)
+        {
+            this.LockModuleList.Items.Add(row);
+        }
+
+        // 占位/错误提示:Found 且有模块时隐藏;未找到显示「未找到」,解析失败显示错误,空 lock 显示空表提示。
+        var hasModules = data.State == LockPanelData.LoadState.Found && data.Modules.Count > 0;
+        string placeholder;
+        if (data.State == LockPanelData.LoadState.Failed)
+        {
+            placeholder = Localization.Instance.LockLoadFailed + ": " + data.ErrorMessage;
+        }
+        else if (data.State == LockPanelData.LoadState.NotFound)
+        {
+            placeholder = Localization.Instance.LockStateNotFound;
+        }
+        else
+        {
+            placeholder = Localization.Instance.LockEmptyModules;
+        }
+        this.LockPlaceholderRow.Text = hasModules ? string.Empty : placeholder;
+        this.LockTableSection.IsVisible = data.State == LockPanelData.LoadState.Found;
+    }
+
+    private void LockRefreshButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        RefreshLockPanel();
     }
 
     /// <summary>
@@ -271,7 +347,41 @@ public partial class MainWindow : Window
             await Task.Delay(500);
             timer.Stop();
             FlushLog();
+            UpdateLockSummaryFromLog();
+            RefreshLockPanel();
             this.ExportButton.IsEnabled = true;
+        }
+    }
+
+    /// <summary>
+    /// 从本次导出日志中提取 lock 变更统计并显示到面板底部。
+    /// 导出器会输出一行「[Lock] 涉及模块 N 个，新增 SubId M 条：…」，
+    /// GUI 只做观测展示，不重新解析 lock 文件。
+    /// </summary>
+    private void UpdateLockSummaryFromLog()
+    {
+        this.LockSummaryText.Text = string.Empty;
+        var output = stringWriter.ToString();
+        if (string.IsNullOrEmpty(output))
+        {
+            return;
+        }
+
+        var lines = output.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+        // 从后往前找最近一条 [Lock] 统计行,与导出器最后一次落盘保持一致。
+        for (var i = lines.Length - 1; i >= 0; i--)
+        {
+            int moduleCount;
+            int newlyAssignedCount;
+            if (LockSummaryParser.TryParse(lines[i], out moduleCount, out newlyAssignedCount))
+            {
+                this.LockSummaryText.Text = string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    Localization.Instance.LockSummaryTemplate,
+                    moduleCount,
+                    newlyAssignedCount);
+                return;
+            }
         }
     }
 
@@ -286,6 +396,8 @@ public partial class MainWindow : Window
         var modeKey = this.Mode?.SelectionBoxItem?.ToString();
         ApplyOptionsToUI(SettingData.GetOptions(modeKey));
         UpdateModeSpecificVisibility(modeKey);
+        // 模式切换可能改变 lock 文件路径(MessageIdLockPath 按模式配置),同步刷新观测面板。
+        RefreshLockPanel();
     }
 
     /// <summary>
@@ -321,6 +433,11 @@ public partial class MainWindow : Window
             return;
         }
         Localization.Instance.SetCulture(Localization.SupportedCultures[idx].Code);
+        // 面板列头/占位文案由 code-behind 直接赋值,不参与绑定,语言切换后需手动重刷。
+        if (_initialized)
+        {
+            RefreshLockPanel();
+        }
     }
 
     /// <summary>
