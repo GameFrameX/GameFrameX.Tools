@@ -12,3 +12,11 @@ jobs:
       dotnet_version: "10.0.x"
       docker_image_name: "gameframex-tools"
     secrets: inherit
+
+  notify:
+    needs: release
+    if: needs.release.result == 'success'
+    uses: GameFrameX/public-github-actions/.github/workflows/notify.yml@main
+    with:
+      repository_name: GameFrameX.Tools
+    secrets: inherit
