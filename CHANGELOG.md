@@ -1,3 +1,8 @@
+## [0.5.1] - 2026-08-28
+
+### ci
+
+* add Bluesky notify job after release
 ## [0.5.0] - 2026-08-18
 
 ### Features
