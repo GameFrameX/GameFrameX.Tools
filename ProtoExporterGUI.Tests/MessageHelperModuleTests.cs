@@ -69,8 +69,8 @@ message ReqDemo
 
         var ex = Assert.Throws<FormatException>(() => MessageHelper.Parse(proto, "_0010_Basic", "out", false));
 
-        Assert.Contains("10", ex.Message);
-        Assert.Contains("20", ex.Message);
+        // 断言取资源文案本体（与被测方同 culture，自洽），数字/文件名为字面量、语言无关
+        Assert.Equal(string.Format(Loc.Err_ModuleMismatch, "_0010_Basic", 10, 20), ex.Message);
         Assert.Contains("_0010_Basic", ex.Message);
     }
 
@@ -90,7 +90,7 @@ message ReqDemo
 
         var ex = Assert.Throws<Exception>(() => MessageHelper.Parse(proto, "Basic", "out", false));
 
-        Assert.Contains("Module not found", ex.Message);
+        Assert.Equal(Loc.Err_ModuleNotFound, ex.Message);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ message ReqDemo
     {
         var ex = Assert.Throws<FormatException>(() => MessageHelper.Parse(ProtoWithModule10, "_0010Basic", "out", false));
 
-        Assert.Contains("_0010Basic", ex.Message);
+        Assert.Equal(string.Format(Loc.Err_ModuleFileNameFormat, "_0010Basic"), ex.Message);
     }
 
     [Fact]

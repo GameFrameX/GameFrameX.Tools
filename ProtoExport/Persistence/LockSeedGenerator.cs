@@ -66,14 +66,13 @@ public static class LockSeedGenerator
                 if (info.Opcode <= 0)
                 {
                     throw new InvalidDataException(
-                        $"seed 模式下 module={key} 消息 '{info.Name}' 的当前 Opcode={info.Opcode} 不合法，"
-                        + "请先跑一次普通导出（不使用 --messageIdLockPath）让行序自增跑完，再做 seed。");
+                        string.Format(Loc.Err_SeedOpcodeInvalid, key, info.Name, info.Opcode));
                 }
 
                 if (info.Opcode > MessageIdAllocator.MaxSubId)
                 {
                     throw new InvalidDataException(
-                        $"seed 模式下 module={key} 消息 '{info.Name}' 的 Opcode={info.Opcode} 超过 SubId 上限 {MessageIdAllocator.MaxSubId}");
+                        string.Format(Loc.Err_SeedOpcodeExceed, key, info.Name, info.Opcode, MessageIdAllocator.MaxSubId));
                 }
 
                 entry.Messages[info.Name] = info.Opcode;

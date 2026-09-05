@@ -126,7 +126,7 @@ public static class MessageIdAllocator
                 if (existingSubId <= 0 || existingSubId > MaxSubId)
                 {
                     throw new InvalidDataException(
-                        $"lock 中 module={moduleKey} 消息 '{info.Name}' 的历史 SubId={existingSubId} 越界（合法范围 1..{MaxSubId}）");
+                        string.Format(Loc.Err_LockSubIdOutOfRange, moduleKey, info.Name, existingSubId, MaxSubId));
                 }
 
                 info.Opcode = existingSubId;
@@ -148,7 +148,7 @@ public static class MessageIdAllocator
             if (next > MaxSubId)
             {
                 throw new InvalidDataException(
-                    $"module={moduleKey} 的 SubId 已用尽（>={MaxSubId}），请为该模块申请新的 ModuleID");
+                    string.Format(Loc.Err_SubIdExhausted, moduleKey, MaxSubId));
             }
 
             toAssign[info.Name] = next;
