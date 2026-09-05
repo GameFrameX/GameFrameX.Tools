@@ -51,19 +51,18 @@ public static class MessageIdLockStore
         }
         catch (JsonException ex)
         {
-            throw new InvalidDataException($"lock 文件 {path} 解析失败：{ex.Message}", ex);
+            throw new InvalidDataException(string.Format(Loc.Err_LockFileParseFailed, path, ex.Message), ex);
         }
 
         if (lockData == null)
         {
-            throw new InvalidDataException($"lock 文件 {path} 解析结果为空");
+            throw new InvalidDataException(string.Format(Loc.Err_LockFileEmpty, path));
         }
 
         if (lockData.SchemaVersion != CurrentSchemaVersion)
         {
             throw new InvalidDataException(
-                $"lock 文件 {path} 的 schemaVersion={lockData.SchemaVersion} 与当前支持版本 {CurrentSchemaVersion} 不兼容，"
-                + "请按迁移说明手动升级或删除该文件后重新生成。");
+                string.Format(Loc.Err_LockSchemaIncompatible, path, lockData.SchemaVersion, CurrentSchemaVersion));
         }
 
         // 校验 module key 必须落在 short 范围内，避免后续位运算溢出。
@@ -71,7 +70,7 @@ public static class MessageIdLockStore
         {
             if (!short.TryParse(key, out _))
             {
-                throw new InvalidDataException($"lock 文件 {path} 中 module key '{key}' 不是合法的 short 范围");
+                throw new InvalidDataException(string.Format(Loc.Err_LockModuleKeyInvalid, path, key));
             }
         }
 

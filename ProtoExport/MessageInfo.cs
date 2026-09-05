@@ -233,7 +233,7 @@ namespace GameFrameX.ProtoExport
                 _members = value;
                 if (!IsEnum && value >= 2047 && Name != "ErrorCode")
                 {
-                    throw new Exception("成员编码不能大于2047");
+                    throw new Exception(Loc.Err_MemberTagExceed);
                 }
             }
         }
