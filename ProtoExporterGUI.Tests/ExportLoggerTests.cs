@@ -70,4 +70,18 @@ public class ExportLoggerTests : IDisposable
         Assert.Single(second);
         Assert.Equal("only-second", second[0]);
     }
+
+    /// <summary>
+    /// 赋 null 恢复默认 Console 输出：后续调用走回退委托，不再 NRE。
+    /// </summary>
+    [Fact]
+    public void NullAssignment_FallsBackToConsole()
+    {
+        ExportLogger.WriteLine = null;
+
+        Assert.NotNull(ExportLogger.WriteLine);
+
+        var ex = Record.Exception(() => ExportLogger.WriteLine("fallback-to-console"));
+        Assert.Null(ex);
+    }
 }
