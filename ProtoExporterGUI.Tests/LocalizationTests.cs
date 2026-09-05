@@ -16,8 +16,11 @@ public class LocalizationTests : IDisposable
         CultureInfo.DefaultThreadCurrentUICulture = _originalDefaultCulture;
     }
 
+    /// <summary>
+    /// WindowTitle 按当前语言显示友好名称。
+    /// </summary>
     [Fact]
-    public void WindowTitle_按当前语言显示友好名称()
+    public void WindowTitle_ShowsFriendlyNamePerCurrentCulture()
     {
         Localization.Instance.SetCulture("zh-CN");
         Assert.Equal("ProtoExporterGUI 协议导出工具", Localization.Instance.WindowTitle);

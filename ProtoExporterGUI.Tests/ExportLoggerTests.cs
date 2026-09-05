@@ -30,19 +30,19 @@ public class ExportLoggerTests : IDisposable
         => ExportLogger.WriteLine = Console.WriteLine;
 
     /// <summary>
-    /// 默认委托非空（指向 Console.WriteLine），保证 CLI 宿主行为不变。
+    /// 默认委托非空，指向 Console（Console.WriteLine），保证 CLI 宿主行为不变。
     /// </summary>
     [Fact]
-    public void 默认委托非空_指向Console()
+    public void DefaultDelegateNotNull_PointsToConsole()
     {
         Assert.NotNull(ExportLogger.WriteLine);
     }
 
     /// <summary>
-    /// 替换委托后，WriteLine 调用必须走新委托。
+    /// 替换委托后调用走新委托。
     /// </summary>
     [Fact]
-    public void 替换委托后调用走新委托()
+    public void ReplacedDelegate_RoutesCallsToNewDelegate()
     {
         var captured = new List<string>();
         ExportLogger.WriteLine = captured.Add;
@@ -54,10 +54,10 @@ public class ExportLoggerTests : IDisposable
     }
 
     /// <summary>
-    /// 再次赋值会覆盖前一个委托，确保 GUI 宿主可随时重定向输出。
+    /// 再次替换覆盖前一个委托，确保 GUI 宿主可随时重定向输出。
     /// </summary>
     [Fact]
-    public void 再次替换覆盖前一个委托()
+    public void SecondReplacement_OverwritesPreviousDelegate()
     {
         var first = new List<string>();
         var second = new List<string>();

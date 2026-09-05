@@ -30,10 +30,10 @@ public class MessageIdCoordinatorTests
     }
 
     /// <summary>
-    /// 首次落 lock：每个模块从 10 起，按 MessageInfo 列表出现顺序递增。
+    /// 首次落锁_按模块顺序分配：首次落 lock 时每个模块从 10 起，按 MessageInfo 列表出现顺序递增。
     /// </summary>
     [Fact]
-    public void 首次落锁_按模块顺序分配()
+    public void FirstLockAssignment_AllocatesInModuleOrder()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
 
@@ -65,10 +65,10 @@ public class MessageIdCoordinatorTests
     }
 
     /// <summary>
-    /// 同模块跨多个 MessageInfoList 时，新号必须接着历史最大号续，不按文件重启。
+    /// 同一模块跨多列表_续号：同模块跨多个 MessageInfoList 时，新号必须接着历史最大号续，不按文件重启。
     /// </summary>
     [Fact]
-    public void 同一模块跨多列表_续号()
+    public void SameModuleAcrossLists_ContinuesSubIds()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
 
@@ -113,11 +113,11 @@ public class MessageIdCoordinatorTests
     }
 
     /// <summary>
-    /// 跨「行序变化 + 同模块多文件」综合场景：
+    /// 跨文件重排与插入_锁稳定：跨「行序变化 + 同模块多文件」综合场景，
     /// 模拟「文件 A 末尾插一条新消息 + 文件 B 重排」，走两轮后必须锁内稳定。
     /// </summary>
     [Fact]
-    public void 跨文件重排与插入_锁稳定()
+    public void CrossFileReorderAndInsert_LockStaysStable()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
 
@@ -154,10 +154,10 @@ public class MessageIdCoordinatorTests
     }
 
     /// <summary>
-    /// 同一模块下某文件整条消息被删，应进 Retired，永不回收。
+    /// 删除消息_进入Retired_永不回收：同一模块下某文件整条消息被删，应进 Retired，永不回收。
     /// </summary>
     [Fact]
-    public void 删除消息_进入Retired_永不回收()
+    public void DeleteMessage_MovesToRetired_NeverReused()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
 
@@ -187,10 +187,10 @@ public class MessageIdCoordinatorTests
     }
 
     /// <summary>
-    /// 多模块独立计数，互不影响。
+    /// 多模块_互不影响：多模块独立计数，互不影响。
     /// </summary>
     [Fact]
-    public void 多模块_互不影响()
+    public void MultipleModules_DoNotAffectEachOther()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
 
@@ -213,10 +213,10 @@ public class MessageIdCoordinatorTests
     }
 
     /// <summary>
-    /// 文件被外部改成损坏 JSON 时，Coordinator 必须抛错（绝不静默走首次分配）。
+    /// Lock损坏_报错而非重新分配：文件被外部改成损坏 JSON 时，Coordinator 必须抛错（绝不静默走首次分配）。
     /// </summary>
     [Fact]
-    public void Lock损坏_报错而非重新分配()
+    public void CorruptedLock_ThrowsInsteadOfReassigning()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
         File.WriteAllText(path, "{ this is not valid json");

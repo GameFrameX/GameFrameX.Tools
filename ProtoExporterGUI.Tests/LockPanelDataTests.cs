@@ -50,8 +50,11 @@ public class LockPanelDataTests
         return lockData;
     }
 
+    /// <summary>
+    /// Lock不存在_状态为未找到且不抛异常：lock 文件不存在时 Observe 状态为未找到（NotFound），且不抛异常。
+    /// </summary>
     [Fact]
-    public void Lock不存在_状态为未找到且不抛异常()
+    public void LockFileMissing_StateNotFoundAndNoThrow()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), "no-such.lock.json");
         var data = LockPanelData.Observe(path);
@@ -62,8 +65,11 @@ public class LockPanelDataTests
         Assert.Null(data.ErrorMessage);
     }
 
+    /// <summary>
+    /// 路径为空_同样视为未找到：lock 路径为空时同样视为未找到（NotFound）。
+    /// </summary>
     [Fact]
-    public void 路径为空_同样视为未找到()
+    public void EmptyPath_TreatedAsNotFound()
     {
         var data = LockPanelData.Observe(null);
 
@@ -71,8 +77,11 @@ public class LockPanelDataTests
         Assert.Empty(data.Modules);
     }
 
+    /// <summary>
+    /// 合法lock_模块消息墓碑计数正确：合法 lock 文件解析为 Found，模块 / 消息 / 墓碑（Retired）计数正确。
+    /// </summary>
     [Fact]
-    public void 合法lock_模块消息墓碑计数正确()
+    public void ValidLock_ModuleMessageRetiredCountsCorrect()
     {
         var path = WriteLock(SampleLock());
         try
@@ -101,8 +110,11 @@ public class LockPanelDataTests
         }
     }
 
+    /// <summary>
+    /// 损坏lock_归入失败状态并携带错误信息：损坏的 lock 文件归入失败状态（Failed）并携带可展示的错误信息。
+    /// </summary>
     [Fact]
-    public void 损坏lock_归入失败状态并携带错误信息()
+    public void CorruptedLock_ClassifiedAsFailedWithErrorMessage()
     {
         var path = TempLockPath();
         File.WriteAllText(path, "{ this is not valid json");
@@ -123,8 +135,11 @@ public class LockPanelDataTests
         }
     }
 
+    /// <summary>
+    /// 时间戳_按指定格式输出：时间戳按指定 format 输出。
+    /// </summary>
     [Fact]
-    public void 时间戳_按指定格式输出()
+    public void Timestamp_FormattedWithGivenFormat()
     {
         var path = WriteLock(SampleLock());
         try
@@ -144,8 +159,11 @@ public class LockPanelDataTests
         }
     }
 
+    /// <summary>
+    /// 时间戳缺失_格式化返回null：时间戳缺失时格式化返回 null。
+    /// </summary>
     [Fact]
-    public void 时间戳缺失_格式化返回null()
+    public void MissingTimestamp_FormatReturnsNull()
     {
         var data = LockPanelData.Observe(null);
 

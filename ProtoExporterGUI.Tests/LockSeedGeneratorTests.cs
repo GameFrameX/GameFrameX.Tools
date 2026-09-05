@@ -25,8 +25,11 @@ public class LockSeedGeneratorTests
         return list;
     }
 
+    /// <summary>
+    /// Seed 冻结当前 Opcode 作为起点，不重新分配。
+    /// </summary>
     [Fact]
-    public void Seed_冻结当前Opcode作为起点()
+    public void Seed_FreezesCurrentOpcodesAsBaseline()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
         try
@@ -59,7 +62,7 @@ public class LockSeedGeneratorTests
     /// Seed 后的 lock 喂给 Coordinator —— 老号必须保持不变；新增消息续号。
     /// </summary>
     [Fact]
-    public void Seed后跑Coordinator_老号不动()
+    public void SeedThenCoordinator_OldSubIdsUnchanged()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
         try
@@ -87,8 +90,11 @@ public class LockSeedGeneratorTests
         }
     }
 
+    /// <summary>
+    /// Seed 时 Opcode 非法（&lt;= 0）报错，防止误传空 proto 集合。
+    /// </summary>
     [Fact]
-    public void Seed_Opcode非法_报错()
+    public void Seed_InvalidOpcode_Throws()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
         try
@@ -105,8 +111,11 @@ public class LockSeedGeneratorTests
         }
     }
 
+    /// <summary>
+    /// Seed 时 Opcode 超出 SubId 上限报错。
+    /// </summary>
     [Fact]
-    public void Seed_Opcode超界_报错()
+    public void Seed_OpcodeExceedsRange_Throws()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
         try
@@ -123,8 +132,11 @@ public class LockSeedGeneratorTests
         }
     }
 
+    /// <summary>
+    /// FormatLockForDisplay 输出等价于序列化输出。
+    /// </summary>
     [Fact]
-    public void FormatLockForDisplay_等价于序列化输出()
+    public void FormatLockForDisplay_EqualsSerializedOutput()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
         try

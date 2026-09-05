@@ -20,9 +20,12 @@ public class LocalizationParityTests
         yield return new object[] { "ProtoExporterGUI.Resources.Strings", typeof(ProtoExporterGUI.Models.LockModuleRow).Assembly };
     }
 
+    /// <summary>
+    /// 中英资源 key 集合一致
+    /// </summary>
     [Theory]
     [MemberData(nameof(ResourceManifests))]
-    public void 中英资源key集合一致(string baseName, System.Reflection.Assembly assembly)
+    public void ChineseAndEnglishResourceKeys_HaveIdenticalSets(string baseName, System.Reflection.Assembly assembly)
     {
         var manager = new ResourceManager(baseName, assembly);
 
