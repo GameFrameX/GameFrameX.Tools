@@ -75,4 +75,14 @@ public class LocTests
     {
         Assert.Equal("No_Such_Key_Should_Ever_Exist", Loc.Get("No_Such_Key_Should_Ever_Exist"));
     }
+
+    /// <summary>
+    /// null 或空 key 原样返回不抛异常（ResourceManager.GetString(null) 会抛 ArgumentNullException，网关层已拦截）
+    /// </summary>
+    [Fact]
+    public void NullOrEmptyKey_ReturnsAsIsWithoutThrowing()
+    {
+        Assert.Null(Loc.Get(null));
+        Assert.Equal(string.Empty, Loc.Get(string.Empty));
+    }
 }

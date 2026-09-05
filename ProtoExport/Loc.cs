@@ -18,10 +18,16 @@ public static class Loc
         new ResourceManager("GameFrameX.ProtoExport.Strings", typeof(Loc).Assembly);
 
     /// <summary>
-    /// 取当前 UI 文化的文案。找不到 key 时返回 key 本身（便于发现遗漏的条目）。
+    /// 取当前 UI 文化的文案。找不到 key 时返回 key 本身（便于发现遗漏的条目）；
+    /// key 为 null / 空串时原样返回，不抛异常。
     /// </summary>
     public static string Get(string key)
     {
+        if (string.IsNullOrEmpty(key))
+        {
+            return key;
+        }
+
         var value = s_manager.GetString(key, CultureInfo.CurrentUICulture);
         return string.IsNullOrEmpty(value) ? key : value;
     }
@@ -74,10 +80,12 @@ public static class Loc
     public static string Err_LockFileEmpty => Get(nameof(Err_LockFileEmpty));
     public static string Err_LockSchemaIncompatible => Get(nameof(Err_LockSchemaIncompatible));
     public static string Err_LockModuleKeyInvalid => Get(nameof(Err_LockModuleKeyInvalid));
+    public static string Err_LockNullField => Get(nameof(Err_LockNullField));
     public static string Err_LockSubIdOutOfRange => Get(nameof(Err_LockSubIdOutOfRange));
     public static string Err_SubIdExhausted => Get(nameof(Err_SubIdExhausted));
     public static string Err_SeedOpcodeInvalid => Get(nameof(Err_SeedOpcodeInvalid));
     public static string Err_SeedOpcodeExceed => Get(nameof(Err_SeedOpcodeExceed));
+    public static string Err_SeedOpcodeDuplicated => Get(nameof(Err_SeedOpcodeDuplicated));
 
     // 注释校验
     public static string Err_CommentMissingContainer => Get(nameof(Err_CommentMissingContainer));

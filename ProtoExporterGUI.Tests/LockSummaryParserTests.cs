@@ -77,4 +77,27 @@ public class LockSummaryParserTests
         Assert.False(LockSummaryParser.TryParse(null, out _, out _));
         Assert.False(LockSummaryParser.TryParse(string.Empty, out _, out _));
     }
+
+    /// <summary>
+    /// 行首有前缀或缩进_解析失败：正则锚定行首的 [Lock]，时间戳前缀 / 前导空格行均不匹配
+    /// </summary>
+    [Fact]
+    public void LineWithPrefixOrIndent_FailsToParse()
+    {
+        Assert.False(LockSummaryParser.TryParse("12:00:00 [Lock] 涉及模块 2 个，新增 SubId 3 条：", out _, out _));
+        Assert.False(LockSummaryParser.TryParse(" [Lock] modules affected: 2, newly assigned SubIds: 3", out _, out _));
+        Assert.False(LockSummaryParser.TryParse("日志 [Lock] 涉及模块 2 个", out _, out _));
+    }
+
+    /// <summary>
+    /// 数字超出int范围_解析失败：捕获的模块数为超长数字时 int.TryParse 失败，返回 false 不抛异常
+    /// </summary>
+    [Fact]
+    public void NumberBeyondIntRange_FailsToParse()
+    {
+        var ok = LockSummaryParser.TryParse("[Lock] 涉及模块 99999999999 个，新增 SubId 3 条：", out var modules, out _);
+
+        Assert.False(ok);
+        Assert.Equal(0, modules);
+    }
 }

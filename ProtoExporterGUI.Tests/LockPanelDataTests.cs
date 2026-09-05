@@ -169,4 +169,71 @@ public class LockPanelDataTests
 
         Assert.Null(data.FormatLastWriteTime("yyyy-MM-dd"));
     }
+
+    /// <summary>
+    /// 空白路径_同样视为未找到：空串 / 纯空白路径与 null 一致归 NotFound。
+    /// </summary>
+    [Fact]
+    public void BlankPath_TreatedAsNotFound()
+    {
+        var empty = LockPanelData.Observe(string.Empty);
+        Assert.Equal(LockPanelData.LoadState.NotFound, empty.State);
+
+        var blank = LockPanelData.Observe("   ");
+        Assert.Equal(LockPanelData.LoadState.NotFound, blank.State);
+        Assert.Null(blank.LastWriteTime);
+        Assert.Null(blank.ErrorMessage);
+    }
+
+    /// <summary>
+    /// 空模块lock_状态为Found且模块列表为空：合法但无模块的 lock 是 Found（与 NotFound 是两种状态）。
+    /// </summary>
+    [Fact]
+    public void EmptyModulesLock_StateFoundWithEmptyRows()
+    {
+        var path = WriteLock(MessageIdLock.CreateEmpty());
+        try
+        {
+            var data = LockPanelData.Observe(path);
+
+            Assert.Equal(LockPanelData.LoadState.Found, data.State);
+            Assert.NotNull(data.LastWriteTime);
+            Assert.Empty(data.Modules);
+            Assert.Null(data.ErrorMessage);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Schema不兼容_归入失败且保留时间戳：schemaVersion 过期的 lock 归 Failed，
+    /// 但文件存在这一事实仍应展示（LastWriteTime 非 null），便于用户定位过期文件。
+    /// </summary>
+    [Fact]
+    public void IncompatibleSchema_FailedWithLastWriteTimePreserved()
+    {
+        var path = TempLockPath();
+        File.WriteAllText(path, "{ \"schemaVersion\": 99, \"modules\": {} }");
+        try
+        {
+            var data = LockPanelData.Observe(path);
+
+            Assert.Equal(LockPanelData.LoadState.Failed, data.State);
+            Assert.NotNull(data.LastWriteTime);
+            Assert.False(string.IsNullOrEmpty(data.ErrorMessage));
+            Assert.Empty(data.Modules);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
 }

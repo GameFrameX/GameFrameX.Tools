@@ -91,10 +91,12 @@
   <data name="Err_LockFileEmpty" xml:space="preserve"><value>Lock file {0} deserialized to an empty result</value></data>
   <data name="Err_LockSchemaIncompatible" xml:space="preserve"><value>schemaVersion={1} of lock file {0} is incompatible with supported version {2}; upgrade it per the migration guide, or delete it and regenerate.</value></data>
   <data name="Err_LockModuleKeyInvalid" xml:space="preserve"><value>Module key '{1}' in lock file {0} is not a valid short value</value></data>
+  <data name="Err_LockNullField" xml:space="preserve"><value>Field {1} of lock file {0} is null (it must be omitted or an object)</value></data>
   <data name="Err_LockSubIdOutOfRange" xml:space="preserve"><value>Historical SubId={2} of message '{1}' (module={0}) in lock is out of range (valid 1..{3})</value></data>
   <data name="Err_SubIdExhausted" xml:space="preserve"><value>SubIds of module={0} are exhausted (&gt;={1}); request a new ModuleID for it</value></data>
   <data name="Err_SeedOpcodeInvalid" xml:space="preserve"><value>Under seed mode, current Opcode={2} of message '{1}' (module={0}) is invalid; run a normal export first (without --messageIdLockPath) so line-order auto-increment completes, then seed.</value></data>
   <data name="Err_SeedOpcodeExceed" xml:space="preserve"><value>Opcode={2} of message '{1}' (module={0}) exceeds the SubId upper bound {3} under seed mode</value></data>
+  <data name="Err_SeedOpcodeDuplicated" xml:space="preserve"><value>Opcode={1} is used by multiple messages ('{2}' and '{3}') in module={0} under seed mode; cannot freeze</value></data>
 
   <!-- Comment validation -->
   <data name="Err_CommentMissingContainer" xml:space="preserve"><value>{0}: {1} '{2}' is missing a comment</value></data>
