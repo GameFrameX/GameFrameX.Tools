@@ -167,4 +167,86 @@ message ReqDemo
 
         Assert.Throws<FormatException>(() => MessageHelper.Parse(proto, "Basic", "out", false));
     }
+
+    /// <summary>
+    /// 缺 package 声明时报 PackageNotFound（该分支先输出日志再抛异常）。
+    /// </summary>
+    [Fact]
+    public void MissingPackageDeclaration_ThrowsPackageNotFound()
+    {
+        var proto = ProtoWithModule10.Replace("package Test;", string.Empty);
+
+        var ex = Assert.Throws<Exception>(() => MessageHelper.Parse(proto, "Basic", "out", false));
+
+        Assert.Equal(string.Format(Loc.Err_PackageNotFound, "Basic"), ex.Message);
+    }
+
+    /// <summary>
+    /// 模块号 0 是合法 short，照常解析（不能把 0 当哨兵拒绝）。
+    /// </summary>
+    [Fact]
+    public void ModuleZero_ParsesNormally()
+    {
+        var proto = ProtoWithModule10.Replace("option module = 10;", string.Empty);
+
+        var info = MessageHelper.Parse(proto, "_0_Basic", "out", false);
+
+        Assert.Equal(0, info.Module);
+        Assert.Equal(MessageInfoList.ModuleSourceKind.FileName, info.ModuleSource);
+    }
+
+    /// <summary>
+    /// short 边界值 32767 / -32768 合法：上限下界的模块号照常解析，不报范围错。
+    /// </summary>
+    [Fact]
+    public void ShortBoundaryValues_ParseSuccessfully()
+    {
+        var proto = ProtoWithModule10.Replace("option module = 10;", string.Empty);
+        var fromFileName = MessageHelper.Parse(proto, "_32767_Basic", "out", false);
+        Assert.Equal(short.MaxValue, fromFileName.Module);
+
+        var protoOption = ProtoWithModule10.Replace("option module = 10;", "option module = -32768;");
+        var fromOption = MessageHelper.Parse(protoOption, "Basic", "out", false);
+        Assert.Equal(short.MinValue, fromOption.Module);
+        Assert.Equal(MessageInfoList.ModuleSourceKind.Option, fromOption.ModuleSource);
+    }
+
+    /// <summary>
+    /// option 等号两侧必须有空格（行为固化）：module 声明模式要求 "module = " 精确空格，
+    /// "option module=10;" 不匹配，落入 ModuleNotFound 而非解析成功。
+    /// </summary>
+    [Fact]
+    public void OptionWithoutSpacesAroundEquals_NotMatched()
+    {
+        var proto = ProtoWithModule10.Replace("option module = 10;", "option module=10;");
+
+        var ex = Assert.Throws<Exception>(() => MessageHelper.Parse(proto, "Basic", "out", false));
+
+        Assert.Equal(Loc.Err_ModuleNotFound, ex.Message);
+    }
+
+    /// <summary>
+    /// 多条 option module 声明时取第一条（Regex.Match 语义固化）。
+    /// </summary>
+    [Fact]
+    public void MultipleOptionDeclarations_FirstOneWins()
+    {
+        var proto = ProtoWithModule10.Replace("option module = 10;", "option module = 10;\noption module = 20;");
+
+        var info = MessageHelper.Parse(proto, "Basic", "out", false);
+
+        Assert.Equal(10, info.Module);
+    }
+
+    /// <summary>
+    /// 文件名含中文与空格的路径，仍正确剥离目录与扩展名后取前缀。
+    /// </summary>
+    [Fact]
+    public void FileNameWithChineseAndSpaces_StillUsesPrefix()
+    {
+        var info = MessageHelper.Parse(ProtoWithModule10, "我的 Protobuf 目录/_0010_基础.proto", "out", false);
+
+        Assert.Equal(10, info.Module);
+        Assert.Equal(MessageInfoList.ModuleSourceKind.FileName, info.ModuleSource);
+    }
 }
