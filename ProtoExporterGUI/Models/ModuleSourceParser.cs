@@ -10,15 +10,15 @@ namespace ProtoExporterGUI.Models
     /// </summary>
     /// <remarks>
     /// 导出器（ProtoExport.MessageHelper.Parse）解析每个 proto 文件后输出一行
-    /// <c>Package: X => Module: 10 (from fileName)</c> 的日志。GUI 只做观测，
-    /// 从日志读回 module → source 映射，与 lock 面板按模块号关联显示。
-    /// 正则按数字与来源 token 捕获，不锚定中文文案细节。
+    /// <c>Package X =&gt; Module 10 (from fileName)</c>（英文）/ <c>包 X =&gt; 模块 10（来源 fileName）</c>（中文）
+    /// 的日志，语言随 UI culture 切换。GUI 只做观测，从日志读回 module → source 映射，
+    /// 与 lock 面板按模块号关联显示。正则同时兼容中英文两种行格式，来源 token（fileName/option）保持字面。
     /// </remarks>
     public static class ModuleSourceParser
     {
-        /// <summary>匹配导出器输出的 module 来源日志行。</summary>
+        /// <summary>匹配导出器输出的 module 来源日志行（中英文双语兼容，含历史冒号格式）。</summary>
         private static readonly Regex SourcePattern = new Regex(
-            @"=>\s*Module:\s*(?<module>-?\d+)\s*\(from\s+(?<source>fileName|option)\)",
+            @"=>\s*(?:Module|模块):?\s*(?<module>-?\d+)\s*[(（]\s*(?:from|来源)[:\s]\s*(?<source>fileName|option)\s*[)）]",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         /// <summary>
