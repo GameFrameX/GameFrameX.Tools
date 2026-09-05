@@ -10,8 +10,10 @@ namespace ProtoExporterGUI.Tests;
 /// </summary>
 /// <remarks>
 /// ExportLogger.WriteLine 是静态可变委托（默认 Console.WriteLine），GUI 宿主启动时替换为 UI 追加。
-/// 委托是进程级共享状态，测试间会互相污染，故每个测试前后恢复默认 Console.WriteLine。
+/// 委托是进程级共享状态，测试间会互相污染，故每个测试前后恢复默认 Console.WriteLine；
+/// 并显式归入 "ExportLogger" collection，与其他调用 Parse 写日志的测试串行执行。
 /// </remarks>
+[Collection("ExportLogger")]
 public class ExportLoggerTests : IDisposable
 {
     public ExportLoggerTests()
