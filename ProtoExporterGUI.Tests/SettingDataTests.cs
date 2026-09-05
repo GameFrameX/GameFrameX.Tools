@@ -248,4 +248,158 @@ public class SettingDataTests : IDisposable
         Assert.NotNull(SettingData.GetOptions("Go"));
         Assert.NotNull(SettingData.GetOptions("TypeScript"));
     }
+
+    /// <summary>
+    /// GetOptions：null / 空白 / 未知模式名返回 null，不抛异常。
+    /// </summary>
+    [Fact]
+    public void GetOptions_NullOrBlankOrUnknownMode_ReturnsNull()
+    {
+        Assert.Null(SettingData.GetOptions(null));
+        Assert.Null(SettingData.GetOptions(string.Empty));
+        Assert.Null(SettingData.GetOptions("   "));
+        Assert.Null(SettingData.GetOptions("NoSuchMode"));
+    }
+
+    /// <summary>
+    /// LoadSetting：合法 JSON 但根元素非对象（数组 / 字符串 / 数字 / null 字面量）时静默保留默认。
+    /// </summary>
+    [Theory]
+    [InlineData("[1, 2, 3]")]
+    [InlineData("\"just a string\"")]
+    [InlineData("123")]
+    [InlineData("null")]
+    public void LoadSetting_NonObjectRootJson_KeepsDefaults(string json)
+    {
+        WriteSettingJson(json);
+
+        var ex = Record.Exception(() => SettingData.LoadSetting());
+
+        Assert.Null(ex);
+        var server = SettingData.GetOptions("Server");
+        Assert.NotNull(server);
+        Assert.Equal("CSharp", server.Mode);
+        Assert.Equal("GameFrameX.Proto.Proto", server.NamespaceName);
+    }
+
+    /// <summary>
+    /// LoadSetting：条目值非对象的键被跳过，其余条目继续正常合并。
+    /// </summary>
+    [Fact]
+    public void LoadSetting_NonObjectEntryValues_SkippedOthersStillMerged()
+    {
+        WriteSettingJson("""
+        {
+          "Server": "oops",
+          "Unity": 123,
+          "Go": { "NamespaceName": "ok.go" }
+        }
+        """);
+
+        SettingData.LoadSetting();
+
+        // Server / Unity 条目被跳过，保持默认
+        var server = SettingData.GetOptions("Server");
+        Assert.Equal("CSharp", server.Mode);
+        Assert.Equal("GameFrameX.Proto.Proto", server.NamespaceName);
+
+        // Go 条目正常合并
+        var go = SettingData.GetOptions("Go");
+        Assert.Equal("ok.go", go.NamespaceName);
+    }
+
+    /// <summary>
+    /// LoadSetting：默认表没有的自定义模式键按全新 LauncherOptions 填充并应用覆盖。
+    /// </summary>
+    [Fact]
+    public void LoadSetting_CustomModeKey_CreatesNewOptions()
+    {
+        WriteSettingJson("""
+        {
+          "MyCustom": { "Mode": "Lua", "InputPath": "/proto/custom" }
+        }
+        """);
+
+        SettingData.LoadSetting();
+
+        var custom = SettingData.GetOptions("MyCustom");
+        Assert.NotNull(custom);
+        Assert.Equal("Lua", custom.Mode);
+        Assert.Equal("/proto/custom", custom.InputPath);
+
+        // 内置模式不受影响
+        Assert.NotNull(SettingData.GetOptions("Server"));
+    }
+
+    /// <summary>
+    /// LoadSetting：布尔字段为非布尔 JSON 值（字符串 / 数字）时忽略，保留默认。
+    /// </summary>
+    [Fact]
+    public void LoadSetting_NonBooleanBoolFields_KeepDefaults()
+    {
+        WriteSettingJson("""
+        {
+          "Server": { "IsServer": "yes", "IsGenerateErrorCode": 1 }
+        }
+        """);
+
+        SettingData.LoadSetting();
+
+        var server = SettingData.GetOptions("Server");
+        Assert.True(server.IsServer);            // 默认 true 保留
+        Assert.True(server.IsGenerateErrorCode); // 默认 true 保留
+    }
+
+    /// <summary>
+    /// LoadSetting：字符串字段为非字符串 JSON 值（数字）时忽略，保留默认。
+    /// </summary>
+    [Fact]
+    public void LoadSetting_NonStringStringFields_KeepDefaults()
+    {
+        WriteSettingJson("""
+        {
+          "Server": { "Mode": 123, "NamespaceName": 456 }
+        }
+        """);
+
+        SettingData.LoadSetting();
+
+        var server = SettingData.GetOptions("Server");
+        Assert.Equal("CSharp", server.Mode);
+        Assert.Equal("GameFrameX.Proto.Proto", server.NamespaceName);
+    }
+
+    /// <summary>
+    /// LoadSetting：空文件（0 字节）与损坏内容一致，静默保留默认。
+    /// </summary>
+    [Fact]
+    public void LoadSetting_EmptyFile_KeepsDefaults()
+    {
+        WriteSettingJson(string.Empty);
+
+        var ex = Record.Exception(() => SettingData.LoadSetting());
+
+        Assert.Null(ex);
+        Assert.NotNull(SettingData.GetOptions("Server"));
+        Assert.NotNull(SettingData.GetOptions("Go"));
+    }
+
+    /// <summary>
+    /// LoadSetting：RequireComments / ErrorCodeExcelFilePath 覆盖合并路径。
+    /// </summary>
+    [Fact]
+    public void LoadSetting_RequireCommentsAndErrorCodeExcelPath_OverrideApplied()
+    {
+        WriteSettingJson("""
+        {
+          "Server": { "RequireComments": "All", "ErrorCodeExcelFilePath": "/excel/errors.xlsx" }
+        }
+        """);
+
+        SettingData.LoadSetting();
+
+        var server = SettingData.GetOptions("Server");
+        Assert.Equal("All", server.RequireComments);
+        Assert.Equal("/excel/errors.xlsx", server.ErrorCodeExcelFilePath);
+    }
 }

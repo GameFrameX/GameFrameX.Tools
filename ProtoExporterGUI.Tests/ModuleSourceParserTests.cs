@@ -126,4 +126,62 @@ public class ModuleSourceParserTests
         Assert.Empty(ModuleSourceParser.Collect(null));
         Assert.Empty(ModuleSourceParser.Collect(new string[] { null, string.Empty }));
     }
+
+    /// <summary>
+    /// 空集合与空白行_返回空字典：零元素集合、全空白行均按无匹配处理，不抛异常
+    /// </summary>
+    [Fact]
+    public void EmptyCollectionAndBlankLines_ReturnsEmptyDictionary()
+    {
+        Assert.Empty(ModuleSourceParser.Collect(new string[0]));
+        Assert.Empty(ModuleSourceParser.Collect(new[] { "   ", "\t" }));
+    }
+
+    /// <summary>
+    /// 模块号超short范围_静默跳过：正则能匹配但 TryParse 失败的行被丢弃，不影响其余合法行
+    /// </summary>
+    [Fact]
+    public void ModuleNumberBeyondShortRange_SilentlySkipped()
+    {
+        var map = ModuleSourceParser.Collect(new[]
+        {
+            "Package Overflow => Module 99999 (from fileName)",
+            "Package Basic => Module 10 (from option)",
+        });
+
+        Assert.Single(map);
+        Assert.Equal("option", map[10]);
+    }
+
+    /// <summary>
+    /// 大小写敏感_小写关键字不匹配：正则未开 IgnoreCase，"module" / "package" 小写形态不收集（行为固化）
+    /// </summary>
+    [Fact]
+    public void LowerCaseKeywords_DoNotMatch()
+    {
+        var map = ModuleSourceParser.Collect(new[]
+        {
+            "package Basic => module 10 (from fileName)",
+            "Package Basic => MODULE 10 (from fileName)",
+        });
+
+        Assert.Empty(map);
+    }
+
+    /// <summary>
+    /// 中英文混搭行_同样兼容：格式的各段（箭头 / 模块词 / 来源括号）独立匹配，支持中英混排
+    /// </summary>
+    [Fact]
+    public void MixedChineseEnglishLine_AlsoCollected()
+    {
+        var map = ModuleSourceParser.Collect(new[]
+        {
+            "Package Basic => 模块 10（来源 fileName）",
+            "包 Basic => Module 20 (来源: option)",
+        });
+
+        Assert.Equal(2, map.Count);
+        Assert.Equal("fileName", map[10]);
+        Assert.Equal("option", map[20]);
+    }
 }

@@ -153,4 +153,33 @@ public class UsingStatementsConverterTests
         Assert.Equal(string.Empty, MainWindow.MultilineToPipe(MainWindow.PipeToMultiline(string.Empty)));
         Assert.Equal(string.Empty, MainWindow.PipeToMultiline(MainWindow.MultilineToPipe(string.Empty)));
     }
+
+    /// <summary>
+    /// PipeToMultiline：纯空白输入返回空字符串（与 MultilineToPipe 的空白用例对称）。
+    /// </summary>
+    [Fact]
+    public void PipeToMultiline_WhitespaceOnly_ReturnsEmptyString()
+    {
+        Assert.Equal(string.Empty, MainWindow.PipeToMultiline("   "));
+        Assert.Equal(string.Empty, MainWindow.PipeToMultiline("\t"));
+    }
+
+    /// <summary>
+    /// PipeToMultiline：仅分隔符输入返回空字符串（全部段为空被滤除）。
+    /// </summary>
+    [Fact]
+    public void PipeToMultiline_SeparatorsOnly_ReturnsEmptyString()
+    {
+        Assert.Equal(string.Empty, MainWindow.PipeToMultiline("|||"));
+        Assert.Equal(string.Empty, MainWindow.PipeToMultiline(" | | "));
+    }
+
+    /// <summary>
+    /// MultilineToPipe：同一段文本内混合三种换行符，逐行拆分后统一拼接。
+    /// </summary>
+    [Fact]
+    public void MultilineToPipe_MixedNewlineStylesInOneValue()
+    {
+        Assert.Equal("a|b|c|d", MainWindow.MultilineToPipe("a\r\nb\rc\nd"));
+    }
 }
