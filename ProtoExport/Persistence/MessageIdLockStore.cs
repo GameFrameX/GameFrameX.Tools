@@ -65,12 +65,34 @@ public static class MessageIdLockStore
                 string.Format(Loc.Err_LockSchemaIncompatible, path, lockData.SchemaVersion, CurrentSchemaVersion));
         }
 
-        // 校验 module key 必须落在 short 范围内，避免后续位运算溢出。
-        foreach (var key in lockData.Modules.Keys)
+        // modules / messages / retired 显式写 null 会覆盖属性默认值（手改 lock 的典型损坏形态），
+        // 此处统一拦截为受控异常，避免后续分配链路 NRE。
+        if (lockData.Modules == null)
         {
-            if (!short.TryParse(key, out _))
+            throw new InvalidDataException(string.Format(Loc.Err_LockNullField, path, "modules"));
+        }
+
+        // 校验 module key 必须落在 short 范围内，避免后续位运算溢出。
+        foreach (var kv in lockData.Modules)
+        {
+            if (!short.TryParse(kv.Key, out _))
             {
-                throw new InvalidDataException(string.Format(Loc.Err_LockModuleKeyInvalid, path, key));
+                throw new InvalidDataException(string.Format(Loc.Err_LockModuleKeyInvalid, path, kv.Key));
+            }
+
+            if (kv.Value == null)
+            {
+                throw new InvalidDataException(string.Format(Loc.Err_LockNullField, path, $"modules/{kv.Key}"));
+            }
+
+            if (kv.Value.Messages == null)
+            {
+                throw new InvalidDataException(string.Format(Loc.Err_LockNullField, path, $"modules/{kv.Key}/messages"));
+            }
+
+            if (kv.Value.Retired == null)
+            {
+                throw new InvalidDataException(string.Format(Loc.Err_LockNullField, path, $"modules/{kv.Key}/retired"));
             }
         }
 
@@ -90,16 +112,26 @@ public static class MessageIdLockStore
             Directory.CreateDirectory(dir);
         }
 
-        var tmp = path + ".tmp";
-        File.WriteAllText(tmp, Serialize(lockData));
-
-        if (File.Exists(path))
+        // 临时文件名带随机段：多个进程/线程同时 Save 同一目标时互不覆盖对方的临时文件。
+        // 收尾统一用带覆盖的原子 Move（POSIX rename / Win32 MoveFileEx），消除 Exists 检查的 TOCTOU 窗口。
+        var tmp = path + "." + Path.GetRandomFileName() + ".tmp";
+        try
         {
-            File.Replace(tmp, path, null);
+            File.WriteAllText(tmp, Serialize(lockData));
+            File.Move(tmp, path, true);
         }
-        else
+        catch
         {
-            File.Move(tmp, path);
+            try
+            {
+                File.Delete(tmp);
+            }
+            catch
+            {
+                // 清理失败不掩盖原始异常
+            }
+
+            throw;
         }
     }
 

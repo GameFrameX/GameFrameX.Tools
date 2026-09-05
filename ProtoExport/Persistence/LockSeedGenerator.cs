@@ -61,6 +61,10 @@ public static class LockSeedGenerator
             };
             lockData.Modules[key] = entry;
 
+            // 同模块内重复 Opcode 意味着行序自增已被破坏，冻结进 lock 会造成同号双登记，
+            // 后续 Coordinator 沿用时会撞号——在 seed 阶段直接报错。
+            var usedOpcodes = new Dictionary<int, string>();
+
             foreach (var info in messages)
             {
                 if (info.Opcode <= 0)
@@ -75,6 +79,13 @@ public static class LockSeedGenerator
                         string.Format(Loc.Err_SeedOpcodeExceed, key, info.Name, info.Opcode, MessageIdAllocator.MaxSubId));
                 }
 
+                if (usedOpcodes.TryGetValue(info.Opcode, out var firstName))
+                {
+                    throw new InvalidDataException(
+                        string.Format(Loc.Err_SeedOpcodeDuplicated, key, info.Opcode, firstName, info.Name));
+                }
+
+                usedOpcodes[info.Opcode] = info.Name;
                 entry.Messages[info.Name] = info.Opcode;
                 assigned.Add($"{key}.{info.Name}");
             }

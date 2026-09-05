@@ -93,10 +93,12 @@
   <data name="Err_LockFileEmpty" xml:space="preserve"><value>lock 文件 {0} 解析结果为空</value></data>
   <data name="Err_LockSchemaIncompatible" xml:space="preserve"><value>lock 文件 {0} 的 schemaVersion={1} 与当前支持版本 {2} 不兼容，请按迁移说明手动升级或删除该文件后重新生成。</value></data>
   <data name="Err_LockModuleKeyInvalid" xml:space="preserve"><value>lock 文件 {0} 中 module key '{1}' 不是合法的 short 范围</value></data>
+  <data name="Err_LockNullField" xml:space="preserve"><value>lock 文件 {0} 的字段 {1} 为 null（应省略或为对象）</value></data>
   <data name="Err_LockSubIdOutOfRange" xml:space="preserve"><value>lock 中 module={0} 消息 '{1}' 的历史 SubId={2} 越界（合法范围 1..{3}）</value></data>
   <data name="Err_SubIdExhausted" xml:space="preserve"><value>module={0} 的 SubId 已用尽（&gt;={1}），请为该模块申请新的 ModuleID</value></data>
   <data name="Err_SeedOpcodeInvalid" xml:space="preserve"><value>seed 模式下 module={0} 消息 '{1}' 的当前 Opcode={2} 不合法，请先跑一次普通导出（不使用 --messageIdLockPath）让行序自增跑完，再做 seed。</value></data>
   <data name="Err_SeedOpcodeExceed" xml:space="preserve"><value>seed 模式下 module={0} 消息 '{1}' 的 Opcode={2} 超过 SubId 上限 {3}</value></data>
+  <data name="Err_SeedOpcodeDuplicated" xml:space="preserve"><value>seed 模式下 module={0} 中 Opcode={1} 被多条消息使用（'{2}' 与 '{3}'），无法冻结</value></data>
 
   <!-- 注释校验 -->
   <data name="Err_CommentMissingContainer" xml:space="preserve"><value>{0}: {1} '{2}' 缺少注释</value></data>

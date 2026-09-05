@@ -237,4 +237,110 @@ public class MessageIdCoordinatorTests
             }
         }
     }
+
+    /// <summary>
+    /// 参数守卫_null或空白路径即抛异常:lockPath 为 null / 空串 / 纯空白抛 ArgumentException；lists 为 null 抛 ArgumentNullException。
+    /// </summary>
+    [Fact]
+    public void NullOrWhiteSpaceLockPath_Throws()
+    {
+        var lists = new[] { NewList(1, "Player", "ReqA") };
+        var unusedPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        // ThrowIfNullOrWhiteSpace 对 null/空串抛 ArgumentNullException（ArgumentException 派生类），用 ThrowsAny 覆盖同族
+        Assert.ThrowsAny<ArgumentException>(() => MessageIdCoordinator.AssignAndPersist(null, lists));
+        Assert.ThrowsAny<ArgumentException>(() => MessageIdCoordinator.AssignAndPersist(string.Empty, lists));
+        Assert.ThrowsAny<ArgumentException>(() => MessageIdCoordinator.AssignAndPersist("   ", lists));
+        Assert.Throws<ArgumentNullException>(() => MessageIdCoordinator.AssignAndPersist(unusedPath, null));
+    }
+
+    /// <summary>
+    /// 空列表_锁内容不变:lists 为空集合时不新增分配，现有 lock 字节级不变，统计全为零。
+    /// </summary>
+    [Fact]
+    public void EmptyLists_LockUnchanged()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
+
+        try
+        {
+            var a = NewList(1, "Player", "ReqA", "ReqB");
+            MessageIdCoordinator.AssignAndPersist(path, new[] { a });
+            var before = File.ReadAllText(path);
+
+            var result = MessageIdCoordinator.AssignAndPersist(path, new MessageInfoList[0]);
+
+            Assert.Equal(0, result.ModuleCount);
+            Assert.Equal(0, result.NewlyAssignedCount);
+            Assert.Equal(before, File.ReadAllText(path));
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 非消息条目_被过滤不占号:IsEnum 与非 Req/Resp/Notify 命名的 info 不参与分配。
+    /// 模块桶仍会落一条空 ModuleEntry（分组先于过滤建桶），此处一并固化该语义。
+    /// </summary>
+    [Fact]
+    public void NonMessageEntries_FilteredFromAllocation()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
+
+        try
+        {
+            var list = NewList(1, "Player");
+            list.Infos.Add(new MessageInfo(true) { Name = "ItemKind" }); // enum：跳过
+            list.Infos.Add(new MessageInfo { Name = "Foo" });            // 非 Req/Resp/Notify：跳过
+
+            var result = MessageIdCoordinator.AssignAndPersist(path, new[] { list });
+
+            Assert.Equal(0, result.NewlyAssignedCount);
+            var reloaded = MessageIdLockStore.Load(path);
+            Assert.True(reloaded.Modules.ContainsKey("1"));
+            Assert.Empty(reloaded.Modules["1"].Messages);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 模块号边界值_照常分配:0、负数与 short 极值的模块号均生成合法 key 并正常分配（负模块号是内部协议约定）。
+    /// </summary>
+    [Theory]
+    [InlineData((short)0)]
+    [InlineData((short)-1)]
+    [InlineData(short.MaxValue)]
+    [InlineData(short.MinValue)]
+    public void BoundaryModuleNumbers_AllocateNormally(short module)
+    {
+        var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".lock.json");
+
+        try
+        {
+            var list = NewList(module, "M", "ReqA");
+            MessageIdCoordinator.AssignAndPersist(path, new[] { list });
+
+            var reloaded = MessageIdLockStore.Load(path);
+            var key = module.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            Assert.Equal(10, reloaded.Modules[key].Messages["ReqA"]);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
 }
