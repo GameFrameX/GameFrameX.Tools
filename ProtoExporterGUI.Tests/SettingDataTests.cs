@@ -75,10 +75,10 @@ public class SettingDataTests : IDisposable
     // ---- 测试用例 ----
 
     /// <summary>
-    /// 配置文件不存在时，LoadSetting 必须原样保留全部默认值（含 v0.2.0 新增模式）。
+    /// LoadSetting 无配置文件时保留全部默认值（含 v0.2.0 新增模式）。
     /// </summary>
     [Fact]
-    public void LoadSetting_NoFile_保留全部默认值()
+    public void LoadSetting_NoFile_KeepsAllDefaults()
     {
         // 不写 Setting.json
         SettingData.LoadSetting();
@@ -109,10 +109,10 @@ public class SettingDataTests : IDisposable
     }
 
     /// <summary>
-    /// 用户仅覆盖部分字段时：覆盖字段用新值，未提及字段保留默认，未出现在 JSON 的新模式仍然存在。
+    /// LoadSetting 用户覆盖部分字段时：覆盖字段用新值，未提及字段保留默认，未出现在 JSON 的新模式仍然存在。
     /// </summary>
     [Fact]
-    public void LoadSetting_用户覆盖部分字段_其余保留默认()
+    public void LoadSetting_UserOverridesPartialFields_RestKeepsDefaults()
     {
         WriteSettingJson("""
         {
@@ -144,11 +144,12 @@ public class SettingDataTests : IDisposable
     }
 
     /// <summary>
+    /// LoadSetting：null 字段不清空默认。
     /// P0 回归：旧 Newtonsoft.Json 默认写出 null，旧实现整表覆盖会用 null 清空默认值。
     /// 新实现必须跳过 null/缺失字段，保留默认值。
     /// </summary>
     [Fact]
-    public void LoadSetting_null字段不清空默认()
+    public void LoadSetting_NullFieldsDoNotClearDefaults()
     {
         // 模拟旧版 Newtonsoft 写出的配置：带非空默认值的字段被显式写成 null
         WriteSettingJson("""
@@ -177,10 +178,11 @@ public class SettingDataTests : IDisposable
     }
 
     /// <summary>
+    /// LoadSetting：损坏 JSON 不崩溃，保留默认。
     /// 配置文件损坏（非法 JSON）时，LoadSetting 必须不抛异常并保留默认值。
     /// </summary>
     [Fact]
-    public void LoadSetting_损坏JSON不崩溃_保留默认()
+    public void LoadSetting_CorruptJsonDoesNotCrash_KeepsDefaults()
     {
         WriteSettingJson("{ this is : not valid json ][");
 
@@ -197,10 +199,11 @@ public class SettingDataTests : IDisposable
     }
 
     /// <summary>
+    /// SaveLoad：往返一致。
     /// SaveSetting 产出完整 JSON，重置单例后 LoadSetting 应还原全部字段（含默认值，往返一致）。
     /// </summary>
     [Fact]
-    public void SaveLoad_往返一致()
+    public void SaveLoad_RoundTripConsistent()
     {
         // 先通过部分 JSON 注入覆盖（避免直接访问私有 Options）
         WriteSettingJson("""

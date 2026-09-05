@@ -42,10 +42,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// 首次为模块分配 SubId 必须从 <see cref="MessageIdAllocator.FirstSubId"/> = 10 起。
+    /// 首次分配_从FirstSubId开始：首次为模块分配 SubId 必须从 <see cref="MessageIdAllocator.FirstSubId"/> = 10 起。
     /// </summary>
     [Fact]
-    public void 首次分配_从FirstSubId开始()
+    public void FirstAllocation_StartsAtFirstSubId()
     {
         var lockData = NewLock();
         var msgs = new List<MessageInfo>
@@ -68,10 +68,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// 已分配的消息即使在输入列表中被重排，SubId 必须保持不变。
+    /// 重排消息_沿用历史SubId：已分配的消息即使在输入列表中被重排，SubId 必须保持不变。
     /// </summary>
     [Fact]
-    public void 重排消息_沿用历史SubId()
+    public void ReorderMessages_ReusesHistoricalSubIds()
     {
         var lockData = NewLock();
         Apply(lockData, "ReqA", "ReqB", "ReqC");
@@ -85,10 +85,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// 在已有消息中间插入新消息，老消息 SubId 必须保持不变。
+    /// 中间插入_老消息SubId不变：在已有消息中间插入新消息，老消息 SubId 必须保持不变。
     /// </summary>
     [Fact]
-    public void 中间插入_老消息SubId不变()
+    public void InsertInMiddle_OldMessagesKeepSubId()
     {
         var lockData = NewLock();
         Apply(lockData, "ReqA", "ReqC");
@@ -106,10 +106,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// 删除一个消息：它的 SubId 进入 Retired，永不复用。
+    /// 删除消息_进入Retired_永不回收：删除一个消息时它的 SubId 进入 Retired，永不复用。
     /// </summary>
     [Fact]
-    public void 删除消息_进入Retired_永不回收()
+    public void DeleteMessage_MovesToRetired_NeverReused()
     {
         var lockData = NewLock();
         Apply(lockData, "ReqA", "ReqB", "ReqC");
@@ -132,10 +132,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// 重命名 = 删旧 + 加新：新名拿到 max+1，旧名进入 Retired，旧号永不复用。
+    /// 重命名_旧号永不回收：重命名 = 删旧 + 加新，新名拿到 max+1，旧名进入 Retired，旧号永不复用。
     /// </summary>
     [Fact]
-    public void 重命名_旧号永不回收()
+    public void RenameMessage_OldSubIdNeverReused()
     {
         var lockData = NewLock();
         Apply(lockData, "ReqLogin", "RespLogin");
@@ -151,10 +151,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// 同一份 lock + 同一份 proto，无论跑几遍，最终 lock 必须字节级一致。
+    /// 幂等_同输入反复跑结果一致：同一份 lock + 同一份 proto，无论跑几遍，最终 lock 必须字节级一致。
     /// </summary>
     [Fact]
-    public void 幂等_同输入反复跑结果一致()
+    public void Idempotent_RepeatedRunsOnSameInputYieldSameResult()
     {
         var lockData = NewLock();
         // 首次落 lock
@@ -175,10 +175,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// 模块间独立计数：一个模块的 SubId 变化不影响另一个。
+    /// 多模块_独立计数：模块间独立计数，一个模块的 SubId 变化不影响另一个。
     /// </summary>
     [Fact]
-    public void 多模块_独立计数()
+    public void MultipleModules_IndependentCounting()
     {
         var lockData = NewLock();
 
@@ -194,10 +194,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// ModuleID 越界（&gt; short.MaxValue）写入 lock 必须报错，不能静默写入。
+    /// ModuleKey越界_Load报错：ModuleID 越界（&gt; short.MaxValue）写入 lock 必须报错，不能静默写入。
     /// </summary>
     [Fact]
-    public void ModuleKey越界_Load报错()
+    public void ModuleKeyOutOfRange_LoadThrows()
     {
         var path = Path.GetTempFileName();
         try
@@ -213,10 +213,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// schemaVersion 不一致必须报错，避免「读了一份过期的 lock，导出器静默重排」。
+    /// SchemaVersion不兼容_Load报错：schemaVersion 不一致必须报错，避免「读了一份过期的 lock，导出器静默重排」。
     /// </summary>
     [Fact]
-    public void SchemaVersion不兼容_Load报错()
+    public void SchemaVersionIncompatible_LoadThrows()
     {
         var path = Path.GetTempFileName();
         try
@@ -232,10 +232,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// lock 文件不存在时 Load 必须返回空 lock，不报错（首次运行场景）。
+    /// 文件不存在_Load返回空lock：lock 文件不存在时 Load 必须返回空 lock，不报错（首次运行场景）。
     /// </summary>
     [Fact]
-    public void 文件不存在_Load返回空lock()
+    public void FileMissing_LoadReturnsEmptyLock()
     {
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         try
@@ -255,10 +255,10 @@ public class MessageIdAllocatorTests
     }
 
     /// <summary>
-    /// Save → Load 往返必须保持等价，便于 PR review 时看 diff。
+    /// SaveLoad_往返等价：Save → Load 往返必须保持等价，便于 PR review 时看 diff。
     /// </summary>
     [Fact]
-    public void SaveLoad_往返等价()
+    public void SaveLoad_RoundTripEquivalent()
     {
         var path = Path.GetTempFileName();
         try

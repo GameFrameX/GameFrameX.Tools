@@ -31,8 +31,11 @@ message ReqDemo
 }
 ";
 
+    /// <summary>
+    /// 文件名前缀与 option 一致时，取文件名来源。
+    /// </summary>
     [Fact]
-    public void 文件名前缀与option一致_取文件名来源()
+    public void FileNamePrefixMatchesOption_UsesFileNameSource()
     {
         var info = MessageHelper.Parse(ProtoWithModule10, "_0010_Basic", "out", false);
 
@@ -42,8 +45,11 @@ message ReqDemo
         Assert.Single(info.Infos);
     }
 
+    /// <summary>
+    /// 带路径与扩展名的文件名，仍取前缀。
+    /// </summary>
     [Fact]
-    public void 带路径与扩展名的文件名_仍取前缀()
+    public void FileNameWithPathAndExtension_StillUsesPrefix()
     {
         var info = MessageHelper.Parse(ProtoWithModule10, "Protobuf/_0010_Basic.proto", "out", false);
 
@@ -51,8 +57,11 @@ message ReqDemo
         Assert.Equal(MessageInfoList.ModuleSourceKind.FileName, info.ModuleSource);
     }
 
+    /// <summary>
+    /// 仅文件名前缀、省略 option 时，用文件名。
+    /// </summary>
     [Fact]
-    public void 仅文件名前缀_省略option_用文件名()
+    public void FileNamePrefixOnly_OptionOmitted_UsesFileName()
     {
         var proto = ProtoWithModule10.Replace("option module = 10;", string.Empty);
 
@@ -62,8 +71,11 @@ message ReqDemo
         Assert.Equal(MessageInfoList.ModuleSourceKind.FileName, info.ModuleSource);
     }
 
+    /// <summary>
+    /// 文件名前缀与 option 不一致时，报错并携带两个值。
+    /// </summary>
     [Fact]
-    public void 文件名前缀与option不一致_报错并携带两个值()
+    public void FileNamePrefixMismatchesOption_ThrowsWithBothValues()
     {
         var proto = ProtoWithModule10.Replace("option module = 10;", "option module = 20;");
 
@@ -74,8 +86,11 @@ message ReqDemo
         Assert.Contains("_0010_Basic", ex.Message);
     }
 
+    /// <summary>
+    /// 无前缀文件名，用 option 兜底。
+    /// </summary>
     [Fact]
-    public void 无前缀文件名_option兜底()
+    public void NoPrefixFileName_FallsBackToOption()
     {
         var info = MessageHelper.Parse(ProtoWithModule10, "Basic", "out", false);
 
@@ -83,8 +98,11 @@ message ReqDemo
         Assert.Equal(MessageInfoList.ModuleSourceKind.Option, info.ModuleSource);
     }
 
+    /// <summary>
+    /// 无前缀且无 option 时，报 ModuleNotFound。
+    /// </summary>
     [Fact]
-    public void 无前缀且无option_报ModuleNotFound()
+    public void NoPrefixAndNoOption_ThrowsModuleNotFound()
     {
         var proto = ProtoWithModule10.Replace("option module = 10;", string.Empty);
 
@@ -93,16 +111,22 @@ message ReqDemo
         Assert.Equal(Loc.Err_ModuleNotFound, ex.Message);
     }
 
+    /// <summary>
+    /// 缺第二个下划线的疑似前缀，报格式错误。
+    /// </summary>
     [Fact]
-    public void 缺第二个下划线的疑似前缀_报格式错误()
+    public void PrefixLikeNameMissingSecondUnderscore_ThrowsFormatError()
     {
         var ex = Assert.Throws<FormatException>(() => MessageHelper.Parse(ProtoWithModule10, "_0010Basic", "out", false));
 
         Assert.Equal(string.Format(Loc.Err_ModuleFileNameFormat, "_0010Basic"), ex.Message);
     }
 
+    /// <summary>
+    /// 连字符作分隔符时，同样取前缀。
+    /// </summary>
     [Fact]
-    public void 连字符作分隔符_同样取前缀()
+    public void HyphenAsSeparator_StillUsesPrefix()
     {
         var info = MessageHelper.Parse(ProtoWithModule10, "_0010-Basic", "out", false);
 
@@ -110,8 +134,11 @@ message ReqDemo
         Assert.Equal(MessageInfoList.ModuleSourceKind.FileName, info.ModuleSource);
     }
 
+    /// <summary>
+    /// 负数前缀，剥离前导零得到负模块。
+    /// </summary>
     [Fact]
-    public void 负数前缀_剥离前导零得到负模块()
+    public void NegativePrefix_StripsLeadingZerosToNegativeModule()
     {
         var proto = ProtoWithModule10.Replace("option module = 10;", "option module = -120;");
 
@@ -121,14 +148,20 @@ message ReqDemo
         Assert.Equal(MessageInfoList.ModuleSourceKind.FileName, info.ModuleSource);
     }
 
+    /// <summary>
+    /// 文件名模块超出 short 范围时，报错。
+    /// </summary>
     [Fact]
-    public void 文件名模块超出short范围_报错()
+    public void FileNameModuleExceedsShortRange_Throws()
     {
         Assert.Throws<FormatException>(() => MessageHelper.Parse(ProtoWithModule10, "_99999_Overflow", "out", false));
     }
 
+    /// <summary>
+    /// option 模块超出 short 范围时，报错。
+    /// </summary>
     [Fact]
-    public void option模块超出short范围_报错()
+    public void OptionModuleExceedsShortRange_Throws()
     {
         var proto = ProtoWithModule10.Replace("option module = 10;", "option module = 99999;");
 

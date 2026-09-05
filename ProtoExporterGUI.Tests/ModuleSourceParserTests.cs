@@ -13,8 +13,11 @@ namespace ProtoExporterGUI.Tests;
 /// </summary>
 public class ModuleSourceParserTests
 {
+    /// <summary>
+    /// 英文来源行收集到模块与来源
+    /// </summary>
     [Fact]
-    public void 英文来源行_收集到模块与来源()
+    public void EnglishSourceLine_CollectsModuleAndSource()
     {
         var map = ModuleSourceParser.Collect(new[]
         {
@@ -27,8 +30,11 @@ public class ModuleSourceParserTests
         Assert.Equal("option", map[-1]);
     }
 
+    /// <summary>
+    /// 中文来源行收集到模块与来源
+    /// </summary>
     [Fact]
-    public void 中文来源行_收集到模块与来源()
+    public void ChineseSourceLine_CollectsModuleAndSource()
     {
         var map = ModuleSourceParser.Collect(new[]
         {
@@ -41,8 +47,11 @@ public class ModuleSourceParserTests
         Assert.Equal("option", map[-1]);
     }
 
+    /// <summary>
+    /// 旧版冒号格式行同样兼容
+    /// </summary>
     [Fact]
-    public void 旧版冒号格式行_同样兼容()
+    public void LegacyColonFormatLine_AlsoSupported()
     {
         var map = ModuleSourceParser.Collect(new[]
         {
@@ -53,8 +62,11 @@ public class ModuleSourceParserTests
         Assert.Equal("fileName", map[10]);
     }
 
+    /// <summary>
+    /// 同模块重复出现时以后出现的为准
+    /// </summary>
     [Fact]
-    public void 同模块重复出现_以后出现的为准()
+    public void RepeatedModule_LastOccurrenceWins()
     {
         var map = ModuleSourceParser.Collect(new[]
         {
@@ -66,8 +78,11 @@ public class ModuleSourceParserTests
         Assert.Equal("fileName", map[10]);
     }
 
+    /// <summary>
+    /// 普通日志行跳过不收集
+    /// </summary>
     [Fact]
-    public void 普通日志行_跳过不收集()
+    public void OrdinaryLogLine_SkippedNotCollected()
     {
         var map = ModuleSourceParser.Collect(new[]
         {
@@ -80,8 +95,33 @@ public class ModuleSourceParserTests
         Assert.Empty(map);
     }
 
+    /// <summary>
+    /// 真实 CLI 输出行中英文均可解析
+    /// </summary>
     [Fact]
-    public void null行与null集合_返回空字典不抛异常()
+    public void RealCliOutputLine_ParsesBothChineseAndEnglish()
+    {
+        // 样本采自主仓 11 个 proto 的真实导出输出（zh-CN / en-US culture 各跑一次）
+        var map = ModuleSourceParser.Collect(new[]
+        {
+            "包 InnerSocial => 模块 -120（来源 fileName）",
+            "Package Basic => Module 10 (from fileName)",
+            "包 Plain => 模块 30（来源 option）",
+            "Package ServerInternal => Module -1 (from option)",
+        });
+
+        Assert.Equal(4, map.Count);
+        Assert.Equal("fileName", map[-120]);
+        Assert.Equal("fileName", map[10]);
+        Assert.Equal("option", map[30]);
+        Assert.Equal("option", map[-1]);
+    }
+
+    /// <summary>
+    /// null 行与 null 集合返回空字典不抛异常
+    /// </summary>
+    [Fact]
+    public void NullLineAndNullCollection_ReturnsEmptyDictionaryWithoutThrowing()
     {
         Assert.Empty(ModuleSourceParser.Collect(null));
         Assert.Empty(ModuleSourceParser.Collect(new string[] { null, string.Empty }));
