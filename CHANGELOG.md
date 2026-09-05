@@ -1,3 +1,19 @@
+## [0.6.0] - 2026-09-05
+
+### Documentation
+
+* 更新模块 ID 双声明规则说明
+
+### Features
+
+* 模块 ID 支持文件名前缀声明
+* lock 面板新增模块来源列
+
+### build
+
+* 升级 Foundation.Options 至 4.0.2
+* 升级 Avalonia 至 12.1.2
+* 升级 xunit 测试依赖并为 runner 配置私有资产
 ## [0.5.0] - 2026-08-18
 
 ### Features
