@@ -32,6 +32,16 @@ public class LockSummaryParserTests
     }
 
     [Fact]
+    public void 英文统计行_同样解析()
+    {
+        var ok = LockSummaryParser.TryParse("[Lock] modules affected: 2, newly assigned SubIds: 3: 1.ReqLogin, 2.ReqOpen", out var modules, out var newly);
+
+        Assert.True(ok);
+        Assert.Equal(2, modules);
+        Assert.Equal(3, newly);
+    }
+
+    [Fact]
     public void 普通日志行_解析失败()
     {
         Assert.False(LockSummaryParser.TryParse("协议扫描完成: 共发现 5 个 .proto 文件", out _, out _));
