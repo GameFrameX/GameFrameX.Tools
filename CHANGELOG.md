@@ -1,3 +1,21 @@
+## [0.7.0] - 2026-09-05
+
+### Bug Fixes
+
+* 加固 lock 持久化与 SubId 分配校验
+* ExportLogger 赋 null 回退默认输出
+* 移除 SettingData 未使用的 JsonOptions
+
+### Features
+
+* 导出器文案本地化
+* 日志解析器兼容中英文行格式
+* 补充 Loc 本地化网关契约测试
+* 补充既有行为边界与契约测试
+
+### build
+
+* 测试方法名统一英文化
 ## [0.6.0] - 2026-09-05
 
 ### Documentation
